@@ -29,11 +29,6 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
     setRelationWithKuro(agentActivity.social_relationships['Kuro']?.closeness / 2 | 0)
   }, [agents])
 
-  const getRandomMood = () => {
-    const moods = ["Happy", "Excited", "Curious", "Relaxed", "Busy", "Thoughtful"]
-    return moods[Math.floor(Math.random() * moods.length)]
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-slate-800 text-slate-100">
@@ -48,7 +43,7 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
               <Heart className="w-5 h-5 mr-2 text-red-400" />
               Relationship with Kuro
             </h3>
-            <Progress value={relationshipLevel * 20} className="h-2 mb-2" />
+            <Progress value={relationWithKuro * 20} className="h-2 mb-2" />
             <p className="text-sm text-slate-300">Level {relationWithKuro} / 5</p>
           </div>
           <div className="bg-slate-700/50 p-3 rounded-lg">

@@ -188,6 +188,8 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string } | null>(null)
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
   const [kuroCurrentLocation, setKuroCurrentLocation] = useState("Kuro's House")
+  const [miloCurrentLocation, setMiloCurrentLocation] = useState("Coffee Shop")
+  const [theoCurrentLocation, setTheoCurrentLocation] = useState("Grocery Store")
   const [currentTime, setCurrentTime] = useState(new Date(2023, 0, 1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
   // State for coordinating hover on buttons and structures
@@ -247,10 +249,12 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
 
     if ( newMiloLocation ) {
       setMiloPosition({ x: newMiloLocation.x, y: newMiloLocation.y })
+      setMiloCurrentLocation(newMiloLocation.name)
     }
 
     if ( newTheoLocation ) {
       setTheoPosition({ x: newTheoLocation.x, y: newTheoLocation.y })
+      setTheoCurrentLocation(newTheoLocation.name)
     }
     
   }, [agents])
@@ -458,7 +462,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        onMouseEnter={() => setHoveredLocation("Kuro's House")}
+                        onMouseEnter={() => setHoveredLocation("Kuro")}
                         onMouseLeave={() => setHoveredLocation(null)}
                         variant="ghost"
                         className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
@@ -484,7 +488,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        onMouseEnter={() => setHoveredLocation("Kuro's House")}
+                        onMouseEnter={() => setHoveredLocation("Milo")}
                         onMouseLeave={() => setHoveredLocation(null)}
                         variant="ghost"
                         className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
@@ -495,7 +499,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{kuroCurrentLocation}</p>
+                      <p>{miloCurrentLocation}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -510,7 +514,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        onMouseEnter={() => setHoveredLocation("Kuro's House")}
+                        onMouseEnter={() => setHoveredLocation("Theo")}
                         onMouseLeave={() => setHoveredLocation(null)}
                         variant="ghost"
                         className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
@@ -521,7 +525,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{kuroCurrentLocation}</p>
+                      <p>{theoCurrentLocation}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
