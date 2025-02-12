@@ -1,15 +1,32 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { Cat, Battery, Brain, PlayCircle, HeartPulse } from 'lucide-react'
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { capitalizeFirstLetter } from '@/lib/utils'
 
-const KuroStatsDialog = ({ open, onOpenChange }) => {
-  const stats = {
+const CharacterStatsDialog = ({ open, onOpenChange, name }) => {
+  const agents = useSelector((state: RootState) => state.agentActivity.agents)
+  const [stats, setStats] = useState({
     activity: "Napping in the sun",
     mood: "Happy",
     energy: 60,
     thoughts: "I wonder what adventure awaits me today!"
-  }
+  })
+
+  useEffect(() => {
+    const agent = agents.find((agent) => agent.name == name)
+
+    if ( agent ) {
+      setStats({
+        activity: agent.activity.split('>')[0],
+        mood:  capitalizeFirstLetter(agent.emotion),
+        energy: agent.basic_needs.energy * 10,
+        thoughts: "I wonder what adventure awaits me today!"
+      })
+    }
+  }, [agents])
 
   const getMoodEmoji = (mood: string) => {
     switch (mood) {
@@ -30,7 +47,7 @@ const KuroStatsDialog = ({ open, onOpenChange }) => {
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-yellow-400 flex items-center gap-2">
             <Cat className="w-6 h-6" />
-            Kuro's Status
+            {name}'s Status
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
@@ -68,7 +85,7 @@ const KuroStatsDialog = ({ open, onOpenChange }) => {
           <div className="bg-slate-700/50 p-3 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Brain className="w-5 h-5 text-purple-400" />
-              <span className="text-sm font-medium text-slate-200">Kuro's Thoughts</span>
+              <span className="text-sm font-medium text-slate-200">{name}'s Thoughts</span>
             </div>
             <p className="text-sm text-slate-300 italic">
               "{stats.thoughts}"
@@ -80,5 +97,5 @@ const KuroStatsDialog = ({ open, onOpenChange }) => {
   )
 }
 
-export default KuroStatsDialog
+export default CharacterStatsDialog
 
