@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Cat, MapPin, Cloud, Sun, CloudRain, CloudSun, CloudDrizzle, Users, Clock, Coffee, TreesIcon as Tree, Building2, Mail, Home, Newspaper, ShoppingCart, Shirt, Moon, Sunrise } from 'lucide-react'
 import KuroStatsDialog from './KuroStatsDialog'
 import AIAgentDialog from './AIAgentDialog'
+import moment from 'moment';
 
 interface Location {
   id: number
@@ -176,12 +177,13 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string } | null>(null)
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
   const [kuroCurrentLocation, setKuroCurrentLocation] = useState("Kuro's House")
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState(new Date(2023, 0, 1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
   // State for coordinating hover on buttons and structures
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
+  const [activity, setActivity] = useState<{ agents: Array<object>, conversations: object, date: string, time: string, world: object } | null>(null)
 
   // Calculate scale based on container width
   useEffect(() => {
@@ -211,13 +213,77 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
 
   // Kuro moves every 10 seconds, picking a random defined location.
   useEffect(() => {
-    const moveInterval = setInterval(() => {
-      const newLocation = locations[Math.floor(Math.random() * locations.length)]
-      setKuroPosition({ x: newLocation.x, y: newLocation.y })
-      setKuroCurrentLocation(newLocation.name)
-    }, 10000)
-    return () => clearInterval(moveInterval)
+    // const moveInterval = setInterval(() => {
+    //   const newLocation = locations[Math.floor(Math.random() * locations.length)]
+    //   setKuroPosition({ x: newLocation.x, y: newLocation.y })
+    //   setKuroCurrentLocation(newLocation.name)
+    // }, 10000)
+    // return () => clearInterval(moveInterval)
   }, [])
+
+  useEffect(() => {
+    // console.log('Updated Time:', moment(currentTime).format('YYYY-MM-DD HH:mm'));
+    if ( moment(currentTime).format('YYYY-MM-DD') !== moment(currentTime).format('YYYY-MM-DD') )
+      handlePlanDate(currentTime)
+
+    if ( currentTime.getMinutes() % 15 == 0 )
+        handleFetchActivity(currentTime)
+  }, [currentTime])
+
+  useEffect(() => {
+    if ( activity == null ) return ;
+    const agents = activity!.agents
+    const KuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
+
+    const newLocation = locations.find((location) => location.name == KuroAcitivity!.location[0])
+    if ( newLocation == undefined ) return ;
+
+    setKuroPosition({ x: newLocation.x, y: newLocation.y })
+    setKuroCurrentLocation(newLocation.name)
+  }, [activity])
+
+  const handlePlanDate = async (date: Date) => {
+    try {
+      const response = await fetch("/api/plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ date: moment(date).format('YYYY-MM-DD') }),
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch time");
+
+      const data = await response.json();
+      console.log('success plan: ' + data.success);
+    } catch (error) {
+      console.error("Error fetching time:", error);
+    }
+  };
+
+  const handleFetchActivity = async (date: Date) => {
+    try {
+      console.log('FetchActivity: ' + moment(date).format('YYYY-MM-DD HH:mm'));
+      const response = await fetch("/api/activity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          date: moment(date).format('YYYY-MM-DD'),
+          time: moment(date).format('HH:mm')
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch time");
+
+      const data = await response.json();
+      setActivity(data.data);
+      console.log(data.data);
+    } catch (error) {
+      console.error("Error fetching time:", error);
+    }
+  };
 
   const handleLocationClick = (location: Location) => {
     setSelectedLocation(location)
