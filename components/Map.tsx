@@ -175,8 +175,6 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [theoCurrentLocation, setTheoCurrentLocation] = useState("Grocery Store")
   const [currentTime, setCurrentTime] = useState(new Date(2025, 0, Math.floor(Math.random() * 7) + 1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [activity, setActivity] = useState<{ agents: Array<object>, conversations: object, date: string, time: string, world: object } | null>(null)
   const agents = useSelector((state: RootState) => state.agentActivity.agents);
 
 
