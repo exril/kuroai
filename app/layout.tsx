@@ -1,9 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/Header'
-import AgentSidebar from '@/components/AgentSidebar'
-import { ReduxProvider } from "@/redux/provider";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,19 +17,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-slate-900 text-slate-100`}>
-        <ReduxProvider>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <div className="flex-grow flex">
-              <main className="flex-grow p-4">
-                {children}
-              </main>
-              <AgentSidebar />
-            </div>
-          </div>
-        </ReduxProvider>
+        {children}
       </body>
     </html>
   )
 }
-

@@ -1,14 +1,22 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Card, CardContent } from "@/components/ui/card"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import ExpandableChat from './ExpandableChat'
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
+} from "@/components/ui/tooltip"
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+} from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Cat, Dog, Bird, MapPin, Cloud, Sun, CloudRain, CloudSun, CloudDrizzle, Users, Clock, Coffee, TreesIcon as Tree, Building2, Mail, Home, Newspaper, ShoppingCart, Shirt, Moon, Sunrise } from 'lucide-react'
+import {
+  Cat, Cloud, Sun, CloudRain, CloudSun, CloudDrizzle, Users, Clock,
+  Coffee, TreesIcon as Tree, Building2, Mail, Home, Newspaper, ShoppingCart, Shirt,
+  Moon, Sunrise
+} from 'lucide-react'
 import CharacterStatsDialog from './CharacterStatsDialog'
 import AIAgentDialog from './AIAgentDialog'
 import moment from 'moment';
@@ -17,112 +25,14 @@ import { RootState, useAppDispatch } from "@/redux/store";
 import { fetchAgentActivity } from "@/redux/slices/activitySlice";
 
 
-interface Location {
-  id: number
-  name: string
-  // Coordinates in percentage relative to 1920x1080
-  x: number
-  y: number
-  icon: JSX.Element
-  color: string
-}
-
-const locations: Location[] = [
-  { 
-    id: 1, 
-    name: "Coffee Shop", 
-    x: 81.35, // center of _0007_house7
-    y: 47.90, 
-    icon: <Coffee className="w-6 h-6" />, 
-    color: "bg-amber-600" 
-  },
-  { 
-    id: 2, 
-    name: "Park", 
-    x: 48.44, // center of _0002_fountain
-    y: 48.98, 
-    icon: <Tree className="w-6 h-6" />, 
-    color: "bg-green-600" 
-  },
-  { 
-    id: 3, 
-    name: "Office Building", 
-    x: 23.57, // center of _0009_house9
-    y: 34.81, 
-    icon: <Building2 className="w-6 h-6" />, 
-    color: "bg-blue-600" 
-  },
-  { 
-    id: 4, 
-    name: "Postal Office", 
-    x: 79.79, // center of _0004_house2
-    y: 76.20, 
-    icon: <Mail className="w-6 h-6" />, 
-    color: "bg-red-600" 
-  },
-  { 
-    id: 5, 
-    name: "Kuro's House", 
-    x: 48.75, // center of _0000_house1
-    y: 87.59, 
-    icon: <Home className="w-6 h-6" />, 
-    color: "bg-purple-600" 
-  },
-  { 
-    id: 6, 
-    name: "Newspaper Stand", 
-    x: 27.86, // center of _0005_house4
-    y: 73.47, 
-    icon: <Newspaper className="w-6 h-6" />, 
-    color: "bg-orange-600" 
-  },
-  { 
-    id: 7, 
-    name: "Grocery Store", 
-    x: 52.50, // center of _0011_house10
-    y: 17.13, 
-    icon: <ShoppingCart className="w-6 h-6" />, 
-    color: "bg-lime-600" 
-  },
-  { 
-    id: 8, 
-    name: "Fashion Store", 
-    x: 67.02, // center of _0008_house8
-    y: 34.91, 
-    icon: <Shirt className="w-6 h-6" />, 
-    color: "bg-pink-600" 
-  },
-]
-
-const aiAgents = [
-  { id: 1, name: "Alice", location: "Coffee Shop", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 2, name: "Bob", location: "Park", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 3, name: "Charlie", location: "Office Building", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 4, name: "Diana", location: "Postal Office", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 5, name: "Ethan", location: "Newspaper Stand", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 6, name: "Fiona", location: "Grocery Store", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 7, name: "George", location: "Fashion Store", avatar: "/placeholder.svg?height=40&width=40" },
-]
-
-// Mapping from layer name to location name for interactive structures
-const structureMapping: Record<string, string> = {
-  "_0007_house7": "Coffee Shop",
-  "_0002_fountain": "Park",
-  "_0000_house1": "Kuro's House",
-  "_0011_house10": "Grocery Store",
-  "_0004_house2": "Postal Office",
-  "_0008_house8": "Fashion Store",
-  "_0009_house9": "Office Building",
-  "_0005_house4": "Newspaper Stand",
-}
-
-// Component to animate moving clouds
+// Define MovingClouds so they animate over the map.
+// You can adjust the duration, delay, and z-index as needed.
 const MovingClouds = () => {
   const clouds = [
     { src: '/mapLayers/movingCloud1.png', top: '5%', duration: 90, delay: 0 },
     { src: '/mapLayers/movingCloud2.png', top: '10%', duration: 110, delay: 20 },
     { src: '/mapLayers/movingCloud3.png', top: '3%', duration: 80, delay: 10 },
-    { src: '/mapLayers/movingCloud4.png', top: '8%', duration: 100, delay: 30 },
+    { src: '/mapLayers/movingCloud4.png', top: '8%', duration: 100, delay: 30, },
   ]
   return (
     <>
@@ -131,6 +41,8 @@ const MovingClouds = () => {
           key={index}
           src={cloud.src}
           alt="Moving Cloud"
+          draggable={false}
+          onDragStart={e => e.preventDefault()}
           style={{
             position: 'absolute',
             top: cloud.top,
@@ -138,7 +50,8 @@ const MovingClouds = () => {
             width: '300px',
             opacity: 0.8,
             pointerEvents: 'none',
-            zIndex: 9998,
+            // Place moving clouds above the panned layers but below UI overlays:
+            zIndex: 100,
             animation: `moveCloud${index} ${cloud.duration}s linear infinite`,
             animationDelay: `${cloud.delay}s`
           }}
@@ -166,6 +79,67 @@ const MovingClouds = () => {
   )
 }
 
+interface Location {
+  id: number
+  name: string
+  // Coordinates in percentage relative to 1920x1080
+  x: number
+  y: number
+  icon: JSX.Element
+  color: string
+}
+
+const locations: Location[] = [
+  { id: 1, name: "Coffee Shop", x: 81.35, y: 47.90, icon: <Coffee className="w-6 h-6" />, color: "bg-amber-600" },
+  { id: 2, name: "Park", x: 48.44, y: 48.98, icon: <Tree className="w-6 h-6" />, color: "bg-green-600" },
+  { id: 3, name: "Office Building", x: 23.57, y: 34.81, icon: <Building2 className="w-6 h-6" />, color: "bg-blue-600" },
+  { id: 4, name: "Postal Office", x: 79.79, y: 76.20, icon: <Mail className="w-6 h-6" />, color: "bg-red-600" },
+  { id: 5, name: "Kuro's House", x: 48.75, y: 87.59, icon: <Home className="w-6 h-6" />, color: "bg-purple-600" },
+  { id: 6, name: "Newspaper Stand", x: 27.86, y: 73.47, icon: <Newspaper className="w-6 h-6" />, color: "bg-orange-600" },
+  { id: 7, name: "Grocery Store", x: 52.50, y: 17.13, icon: <ShoppingCart className="w-6 h-6" />, color: "bg-lime-600" },
+  { id: 8, name: "Fashion Store", x: 67.02, y: 34.91, icon: <Shirt className="w-6 h-6" />, color: "bg-pink-600" },
+]
+
+const aiAgents = [
+  { id: 1, name: "Alice", location: "Coffee Shop", avatar: "/placeholder.svg?height=40&width=40" },
+  { id: 2, name: "Bob", location: "Park", avatar: "/placeholder.svg?height=40&width=40" },
+  { id: 3, name: "Charlie", location: "Office Building", avatar: "/placeholder.svg?height=40&width=40" },
+  { id: 4, name: "Diana", location: "Postal Office", avatar: "/placeholder.svg?height=40&width=40" },
+  { id: 5, name: "Ethan", location: "Newspaper Stand", avatar: "/placeholder.svg?height=40&width=40" },
+  { id: 6, name: "Fiona", location: "Grocery Store", avatar: "/placeholder.svg?height=40&width=40" },
+  { id: 7, name: "George", location: "Fashion Store", avatar: "/placeholder.svg?height=40&width=40" },
+]
+
+// Mapping for structures (hover effect controlled via buttons)
+const structureMapping: Record<string, string> = {
+  "_0007_house7": "Coffee Shop",
+  "_0002_fountain": "Park",
+  "_0000_house1": "Kuro's House",
+  "_0011_house10": "Grocery Store",
+  "_0004_house2": "Postal Office",
+  "_0008_house8": "Fashion Store",
+  "_0009_house9": "Office Building",
+  "_0005_house4": "Newspaper Stand",
+}
+
+// Layers to be panned (exclude base clouds)
+const pannedLayers = [
+  { name: "_0013_street", width: 1920, height: 1080, top: 0, left: 0 },
+  { name: "_0012_trees4", width: 804, height: 269, top: 0, left: 534 },
+  { name: "_0011_house10", width: 516, height: 360, top: 5, left: 750 },
+  { name: "_0010_trees3", width: 746, height: 798, top: 199, left: 645 },
+  { name: "_0009_house9", width: 905, height: 518, top: 117, left: 0 },
+  { name: "_0008_house8", width: 682, height: 434, top: 160, left: 945 },
+  { name: "_0007_house7", width: 548, height: 296, top: 369, left: 1288 },
+  { name: "_0006_trees2", width: 282, height: 243, top: 530, left: 1638 },
+  { name: "_0005_house4", width: 1068, height: 573, top: 507, left: 1 },
+  { name: "_0004_house2", width: 610, height: 442, top: 602, left: 1227 },
+  { name: "_0003_lamps", width: 821, height: 556, top: 129, left: 418 },
+  { name: "_0002_fountain", width: 158, height: 194, top: 432, left: 851 },
+  { name: "_0001_trees1", width: 204, height: 188, top: 553, left: 933 },
+  { name: "_0000_house1", width: 752, height: 268, top: 812, left: 560 },
+]
+
 interface MapProps {
   currentEvent: string
   weather: string
@@ -173,6 +147,15 @@ interface MapProps {
 
 const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const dispatch = useAppDispatch();
+
+  // Panning and zoom state
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  // Hover state (set via buttons only)
+  const [hoveredLocation, setHoveredLocation] = useState<string | null>(null)
 
   // Initialize Kuro at his house
   const initialKuroPos = locations.find(loc => loc.name === "Kuro's House") || { x: 50, y: 80 }
@@ -192,19 +175,16 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [theoCurrentLocation, setTheoCurrentLocation] = useState("Grocery Store")
   const [currentTime, setCurrentTime] = useState(new Date(2025, 0, Math.floor(Math.random() * 7) + 1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
-  // State for coordinating hover on buttons and structures
-  const [hoveredLocation, setHoveredLocation] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(1)
   const [activity, setActivity] = useState<{ agents: Array<object>, conversations: object, date: string, time: string, world: object } | null>(null)
   const agents = useSelector((state: RootState) => state.agentActivity.agents);
 
-  // Calculate scale based on container width
+
   useEffect(() => {
     const updateScale = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth
-        setScale(containerWidth / 1920)
+        setScale((containerWidth / 1920) * 1.2)
       }
     }
     updateScale()
@@ -212,13 +192,38 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
     return () => window.removeEventListener('resize', updateScale)
   }, [])
 
-  // Time simulation: advance 5 minutes every second.
+  const clampOffset = (newOffset: { x: number; y: number }) => {
+    if (!containerRef.current) return newOffset
+    const containerWidth = containerRef.current.offsetWidth
+    const containerHeight = containerRef.current.offsetHeight
+    const mapWidth = 1920 * scale
+    const mapHeight = 1080 * scale
+    const minX = containerWidth - mapWidth
+    const minY = containerHeight - mapHeight
+    return {
+      x: Math.min(0, Math.max(newOffset.x, minX)),
+      y: Math.min(0, Math.max(newOffset.y, minY))
+    }
+  }
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true)
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y })
+  }
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return
+    const newOffset = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }
+    setOffset(clampOffset(newOffset))
+  }
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
   useEffect(() => {
     const timeInterval = setInterval(() => {
       setCurrentTime(prevTime => {
         const newTime = new Date(prevTime.getTime() + 5 * 60000)
-        const hours = newTime.getHours()
-        setIsNight(hours >= 20 || hours < 6)
+        setIsNight(newTime.getHours() >= 20 || newTime.getHours() < 6)
         return newTime
       })
     }, 1000)
@@ -291,12 +296,10 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
     setSelectedCharacterName(name);
     setIsCharacterStatsDialogOpen(true)
   }
-
   const handleAgentClick = (agent: { id: number, name: string, location: string, avatar: string }) => {
     setSelectedAgent(agent)
     setIsAgentDialogOpen(true)
   }
-
   const getWeatherIcon = (weather: string) => {
     switch (weather) {
       case 'sunny': return <Sun className="w-6 h-6 text-yellow-400" />
@@ -307,235 +310,234 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
       default: return <Sun className="w-6 h-6 text-yellow-400" />
     }
   }
-
   const getAgentsAtLocation = (locationName: string) => {
     return aiAgents.filter(agent => agent.location === locationName)
   }
 
   return (
-    <Card className={`bg-slate-800/50 border-slate-700/50 backdrop-blur supports-[backdrop-filter]:bg-slate-800/75 shadow-lg ${isNight ? 'night-mode' : ''}`}>
-      <CardContent className="p-6">
-        {/* Responsive container (16:9) */}
-        <div ref={containerRef} className="relative w-full" style={{ paddingTop: '56.25%' }}>
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden rounded-lg border-4 border-yellow-600 shadow-lg z-0 bg-slate-700">
-            {/* Moving Clouds on top */}
-            <MovingClouds />
-            {/* Fixed content wrapper (1920x1080) scaled */}
-            <div
-              className="relative"
+    <div
+      ref={containerRef}
+      className="relative w-full h-full overflow-hidden bg-slate-700 select-none"
+      onMouseDownCapture={handleMouseDown}
+      onMouseMoveCapture={handleMouseMove}
+      onMouseUpCapture={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* Fixed Base Clouds as background */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: 'url(/mapLayers/clouds.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          opacity: 1,
+          zIndex: 10
+        }}
+      />
+
+      {/* Draggable map content */}
+      <div
+        className="absolute"
+        style={{
+          transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+          transformOrigin: 'top left',
+          width: '1920px',
+          height: '1080px',
+          transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+          zIndex: 1
+        }}
+      >
+        <MovingClouds />
+
+        {/* Render panned map layers */}
+        {pannedLayers.map((layer, index) => {
+          const extraStyles =
+            structureMapping[layer.name] === hoveredLocation
+              ? { transform: 'scale(1.05)', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }
+              : {}
+          return (
+            <img
+              key={layer.name}
+              src={`/mapLayers/${layer.name}.png`}
+              alt={layer.name}
+              draggable={false}
+              onDragStart={e => e.preventDefault()}
+              className="transition-all duration-200"
               style={{
-                width: '1920px',
-                height: '1080px',
-                transform: `scale(${scale})`,
-                transformOrigin: 'top left'
+                position: 'absolute',
+                left: `${layer.left}px`,
+                top: `${layer.top}px`,
+                width: `${layer.width}px`,
+                height: `${layer.height}px`,
+                zIndex: index + 2,
+                pointerEvents: 'none',
+                ...extraStyles
               }}
-            >
-              {/* Weather & Time Display */}
-              <div className="absolute top-4 right-4 bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg z-[999] flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  {getWeatherIcon(weather)}
-                  <span className="text-sm font-bold text-yellow-400">{weather}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {isNight ? (
-                    <Moon className="w-6 h-6 text-blue-200" />
-                  ) : (
-                    <Sunrise className="w-6 h-6 text-orange-400" />
-                  )}
-                  <span className="text-sm font-bold text-yellow-400">
-                    {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              </div>
+            />
+          )
+        })}
 
-              {/* Current Event Display */}
-              <div className="absolute top-4 left-4 bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg z-[999] max-w-xs">
-                <h3 className="text-sm font-bold text-yellow-400 mb-1">Current Event</h3>
-                <p className="text-xs text-slate-300">{currentEvent}</p>
-              </div>
-
-              {/* Kuro's Current Location Display */}
-              <div className="absolute bottom-4 left-4 bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg z-[999]">
-                <h3 className="text-sm font-bold text-yellow-400 mb-1">Kuro's Location</h3>
-                <p className="text-xs text-slate-300">{kuroCurrentLocation}</p>
-              </div>
-
-              {/* Map Layers */}
-              {[
-                { name: "_0013_street", width: 1920, height: 1080, top: 0, left: 0 },
-                { name: "_0012_trees4", width: 804, height: 269, top: 0, left: 534 },
-                { name: "_0011_house10", width: 516, height: 360, top: 5, left: 750 },
-                { name: "_0010_trees3", width: 746, height: 798, top: 199, left: 645 },
-                { name: "_0009_house9", width: 905, height: 518, top: 117, left: 0 },
-                { name: "_0008_house8", width: 682, height: 434, top: 160, left: 945 },
-                { name: "_0007_house7", width: 548, height: 296, top: 369, left: 1288 },
-                { name: "_0006_trees2", width: 282, height: 243, top: 530, left: 1638 },
-                { name: "_0005_house4", width: 1068, height: 573, top: 507, left: 1 },
-                { name: "_0004_house2", width: 610, height: 442, top: 602, left: 1227 },
-                { name: "_0003_lamps", width: 821, height: 556, top: 129, left: 418 },
-                { name: "_0002_fountain", width: 158, height: 194, top: 432, left: 851 },
-                { name: "_0001_trees1", width: 204, height: 188, top: 553, left: 933 },
-                { name: "_0000_house1", width: 752, height: 268, top: 812, left: 560 },
-                { name: "clouds", width: 1920, height: 1080, top: 0, left: 0 } // base clouds layer
-              ].map((layer, index) => {
-                const interactive = structureMapping[layer.name] !== undefined
-                const pointerStyle = (!interactive || /lamps|trees/i.test(layer.name)) ? 'none' : 'auto'
-                const extraStyles = (interactive && structureMapping[layer.name] === hoveredLocation)
-                  ? { transform: 'scale(1.05)', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }
-                  : {}
-                return (
-                  <img
-                    key={layer.name}
-                    src={`/mapLayers/${layer.name}.png`}
-                    alt={layer.name}
-                    className="transition-all duration-200"
-                    onMouseEnter={() => { if (interactive) setHoveredLocation(structureMapping[layer.name]) }}
-                    onMouseLeave={() => { if (interactive) setHoveredLocation(null) }}
-                    style={{
-                      position: 'absolute',
-                      left: `${layer.left}px`,
-                      top: `${layer.top}px`,
-                      width: `${layer.width}px`,
-                      height: `${layer.height}px`,
-                      zIndex: index + 1,
-                      pointerEvents: pointerStyle,
-                      ...extraStyles
-                    }}
-                  />
-                )
-              })}
-
-              {/* Map Locations - Interactive Buttons */}
-              {locations.map((location) => (
-                <Popover key={`location-${location.id}`}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      onMouseEnter={() => setHoveredLocation(location.name)}
-                      onMouseLeave={() => setHoveredLocation(null)}
-                      className={`absolute w-12 h-12 rounded-full ${location.color} border-2 border-yellow-600 shadow-md transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 
-                        ${hoveredLocation === location.name ? 'scale-105 ring-2 ring-yellow-400' : ''}`}
-                      style={{ left: `${location.x}%`, top: `${location.y}%`, zIndex: 101 }}
-                      aria-label={`Visit ${location.name}`}
-                      onClick={() => handleLocationClick(location)}
-                    >
-                      {location.icon}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-0">
-                    <div className="p-4 bg-slate-800 rounded-t-lg">
-                      <h3 className="text-lg font-bold text-yellow-400 mb-2">{location.name}</h3>
-                      <p className="text-sm text-slate-300">{getLocationDescription(location.name)}</p>
-                      <Button 
-                        className="w-full" 
-                        onClick={() => handleLocationClick(location)}
-                      >
-                        Visit Location
-                      </Button>
-                    </div>
-                    <div className="p-4 bg-slate-700 rounded-b-lg">
-                      <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center">
-                        <Users className="w-4 h-4 mr-2" />
-                        Characters Here
-                      </h4>
-                      {getAgentsAtLocation(location.name).map((agent) => (
-                        <Button
-                          key={agent.id}
-                          variant="secondary"
-                          size="sm" 
-                          className="w-full justify-start text-left mb-1 bg-yellow-500 text-slate-900 hover:bg-yellow-600"
-                          onClick={() => handleAgentClick(agent)}
-                        >
-                          {agent.name}
-                        </Button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              ))}
-
-              {/* Kuro's Avatar */}
-              <div
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
-                style={{ left: `${kuroPosition.x}%`, top: `${kuroPosition.y}%`, zIndex: 102 }}
+        {/* Map Location Buttons */}
+        {locations.map((location) => (
+          <Popover key={`location-${location.id}`}>
+            <PopoverTrigger asChild>
+              <Button
+                onMouseEnter={() => setHoveredLocation(location.name)}
+                onMouseLeave={() => setHoveredLocation(null)}
+                className={`absolute w-12 h-12 rounded-full ${location.color} border-2 border-yellow-600 shadow-md transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
+                  hoveredLocation === location.name ? 'scale-105 ring-2 ring-yellow-400' : ''
+                }`}
+                style={{ left: `${location.x}%`, top: `${location.y}%`, zIndex: 101 }}
+                aria-label={`Visit ${location.name}`}
+                onClick={() => handleLocationClick(location)}
               >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onMouseEnter={() => setHoveredLocation("Kuro")}
-                        onMouseLeave={() => setHoveredLocation(null)}
-                        variant="ghost"
-                        className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
-                        onClick={(e) => handleCharacterClick('Kuro')}
-                        aria-label="Kuro's current location"
-                      >
-                        <Cat className="w-8 h-8 text-yellow-400" aria-hidden="true" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{kuroCurrentLocation}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {location.icon}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-0">
+              <div className="p-4 bg-slate-800 rounded-t-lg">
+                <h3 className="text-lg font-bold text-yellow-400 mb-2">{location.name}</h3>
+                <p className="text-sm text-slate-300">{getLocationDescription(location.name)}</p>
+                <Button className="w-full" onClick={() => handleLocationClick(location)}>
+                  Visit Location
+                </Button>
               </div>
+              <div className="p-4 bg-slate-700 rounded-b-lg">
+                <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center">
+                  <Users className="w-4 h-4 mr-2" />
+                  Characters Here
+                </h4>
+                {getAgentsAtLocation(location.name).map((agent) => (
+                  <Button
+                    key={agent.id}
+                    variant="secondary"
+                    size="sm"
+                    className="w-full justify-start text-left mb-1 bg-yellow-500 text-slate-900 hover:bg-yellow-600"
+                    onClick={() => handleAgentClick(agent)}
+                  >
+                    {agent.name}
+                  </Button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        ))}
 
-              {/* Milo's Avatar */}
-              <div
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
-                style={{ left: `${miloPosition.x}%`, top: `${miloPosition.y}%`, zIndex: 102 }}
-              >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onMouseEnter={() => setHoveredLocation("Milo")}
-                        onMouseLeave={() => setHoveredLocation(null)}
-                        variant="ghost"
-                        className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
-                        onClick={(e) => handleCharacterClick('Milo')}
-                        aria-label="Kuro's current location"
-                      >
-                        <Dog className="w-8 h-8 text-yellow-400" aria-hidden="true" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{miloCurrentLocation}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+        {/* Kuro's Avatar */}
+        <div
+          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
+          style={{ left: `${kuroPosition.x}%`, top: `${kuroPosition.y}%`, zIndex: 102 }}
+        >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onMouseEnter={() => setHoveredLocation("Kuro")}
+                  onMouseLeave={() => setHoveredLocation(null)}
+                  variant="ghost"
+                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
+                  onClick={(e) => handleCharacterClick('Kuro')}
+                  aria-label="Kuro's current location"
+                >
+                  <Cat className="w-8 h-8 text-yellow-400" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{kuroCurrentLocation}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
-              {/* Theo's Avatar */}
-              <div
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
-                style={{ left: `${theoPosition.x}%`, top: `${theoPosition.y}%`, zIndex: 102 }}
-              >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onMouseEnter={() => setHoveredLocation("Theo")}
-                        onMouseLeave={() => setHoveredLocation(null)}
-                        variant="ghost"
-                        className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
-                        onClick={(e) => handleCharacterClick('Theo')}
-                        aria-label="Kuro's current location"
-                      >
-                        <Bird className="w-8 h-8 text-yellow-400" aria-hidden="true" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{theoCurrentLocation}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
+        {/* Milo's Avatar */}
+        <div
+          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
+          style={{ left: `${miloPosition.x}%`, top: `${miloPosition.y}%`, zIndex: 102 }}
+        >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onMouseEnter={() => setHoveredLocation("Milo")}
+                  onMouseLeave={() => setHoveredLocation(null)}
+                  variant="ghost"
+                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
+                  onClick={(e) => handleCharacterClick('Milo')}
+                  aria-label="Kuro's current location"
+                >
+                  <Dog className="w-8 h-8 text-yellow-400" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{miloCurrentLocation}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* Theo's Avatar */}
+        <div
+          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
+          style={{ left: `${theoPosition.x}%`, top: `${theoPosition.y}%`, zIndex: 102 }}
+        >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onMouseEnter={() => setHoveredLocation("Theo")}
+                  onMouseLeave={() => setHoveredLocation(null)}
+                  variant="ghost"
+                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
+                  onClick={(e) => handleCharacterClick('Theo')}
+                  aria-label="Kuro's current location"
+                >
+                  <Bird className="w-8 h-8 text-yellow-400" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{theoCurrentLocation}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
+
+      {/* Fixed UI Overlays (2% padding from edges) */}
+      <div className="absolute" style={{ top: '2%', right: '2%', zIndex: 1100 }}>
+        <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            {getWeatherIcon(weather)}
+            <span className="text-sm font-bold text-yellow-400">{weather}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            {isNight ? (
+              <Moon className="w-6 h-6 text-blue-200" />
+            ) : (
+              <Sunrise className="w-6 h-6 text-orange-400" />
+            )}
+            <span className="text-sm font-bold text-yellow-400">
+              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
           </div>
         </div>
-      </CardContent>
+      </div>
 
-      {/* Location Details Dialog */}
+      <div className="absolute" style={{ top: '2%', left: '2%', zIndex: 1100 }}>
+        <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg max-w-xs">
+          <h3 className="text-sm font-bold text-yellow-400 mb-1">Current Event</h3>
+          <p className="text-xs text-slate-300">{currentEvent}</p>
+        </div>
+      </div>
+
+      <div className="absolute" style={{ bottom: '2%', left: '2%', zIndex: 1100 }}>
+        <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg">
+          <h3 className="text-sm font-bold text-yellow-400 mb-1">Kuro's Location</h3>
+          <p className="text-xs text-slate-300">{kuroCurrentLocation}</p>
+        </div>
+      </div>
+
+      {/* Dialogs */}
       <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
         <DialogContent className="sm:max-w-[600px] bg-slate-800 text-slate-100">
           <DialogHeader>
@@ -566,7 +568,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
                 </div>
                 <div className="bg-slate-700 p-3 rounded-lg">
                   <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center">
-                    <MapPin className="w-4 h-4 mr-2" />
+                    <Mail className="w-4 h-4 mr-2" />
                     Location Details
                   </h4>
                   <p className="text-sm text-slate-300">
@@ -579,14 +581,14 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
               <ScrollArea className="h-[300px] pr-4">
                 {selectedLocation && getAgentsAtLocation(selectedLocation.name).map((agent) => (
                   <div key={agent.id} className="flex items-center space-x-4 mb-4 p-3 bg-slate-700 rounded-lg">
-                    <img src={agent.avatar} alt={agent.name} className="w-10 h-10 rounded-full" />
+                    <img src={agent.avatar} alt={agent.name} className="w-10 h-10 rounded-full" draggable={false} onDragStart={e => e.preventDefault()} />
                     <div>
                       <h4 className="text-sm font-semibold text-slate-200">{agent.name}</h4>
                       <p className="text-xs text-slate-400">At {agent.location}</p>
                     </div>
-                    <Button 
+                    <Button
                       variant="secondary"
-                      size="sm" 
+                      size="sm"
                       className="ml-auto bg-yellow-500 text-slate-900 hover:bg-yellow-600"
                       onClick={() => handleAgentClick(agent)}
                     >
@@ -618,7 +620,10 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
 
       {/* AI Agent Dialog */}
       <AIAgentDialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen} agent={selectedAgent} />
-    </Card>
+      
+      {/* Expandable Chat */}
+      <ExpandableChat />
+    </div>
   )
 }
 
