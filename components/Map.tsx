@@ -17,8 +17,13 @@ import {
   Coffee, TreesIcon as Tree, Building2, Mail, Home, Newspaper, ShoppingCart, Shirt,
   Moon, Sunrise
 } from 'lucide-react'
-import KuroStatsDialog from './KuroStatsDialog'
+import CharacterStatsDialog from './CharacterStatsDialog'
 import AIAgentDialog from './AIAgentDialog'
+import moment from 'moment';
+import { useSelector } from "react-redux";
+import { RootState, useAppDispatch } from "@/redux/store";
+import { fetchAgentActivity } from "@/redux/slices/activitySlice";
+
 
 // Define MovingClouds so they animate over the map.
 // You can adjust the duration, delay, and z-index as needed.
@@ -141,6 +146,8 @@ interface MapProps {
 }
 
 const MapComponent = ({ currentEvent, weather }: MapProps) => {
+  const dispatch = useAppDispatch();
+
   // Panning and zoom state
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
@@ -149,6 +156,29 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   // Hover state (set via buttons only)
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null)
+
+  // Initialize Kuro at his house
+  const initialKuroPos = locations.find(loc => loc.name === "Kuro's House") || { x: 50, y: 80 }
+  const initialMiloPos = locations.find(loc => loc.name === "Coffee Shop") || { x: 50, y: 80 }
+  const initialTheoPos = locations.find(loc => loc.name === "Grocery Store") || { x: 50, y: 80 }
+  const [kuroPosition, setKuroPosition] = useState({ x: initialKuroPos.x, y: initialKuroPos.y })
+  const [miloPosition, setMiloPosition] = useState({ x: initialMiloPos.x, y: initialMiloPos.y })
+  const [theoPosition, setTheoPosition] = useState({ x: initialTheoPos.x, y: initialTheoPos.y })
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false)
+  const [isCharacterStatsDialogOpen, setIsCharacterStatsDialogOpen] = useState(false)
+  const [selectedCharacterName, setSelectedCharacterName] = useState('Kuro')
+  const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string } | null>(null)
+  const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
+  const [kuroCurrentLocation, setKuroCurrentLocation] = useState("Kuro's House")
+  const [miloCurrentLocation, setMiloCurrentLocation] = useState("Coffee Shop")
+  const [theoCurrentLocation, setTheoCurrentLocation] = useState("Grocery Store")
+  const [currentTime, setCurrentTime] = useState(new Date(2025, 0, Math.floor(Math.random() * 7) + 1, 6, 0, 0))
+  const [isNight, setIsNight] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [activity, setActivity] = useState<{ agents: Array<object>, conversations: object, date: string, time: string, world: object } | null>(null)
+  const agents = useSelector((state: RootState) => state.agentActivity.agents);
+
 
   useEffect(() => {
     const updateScale = () => {
@@ -189,13 +219,6 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
     setIsDragging(false)
   }
 
-  // Kuro's movement & time effects (same as before)
-  const initialKuroPos = locations.find(loc => loc.name === "Kuro's House") || { x: 50, y: 80 }
-  const [kuroPosition, setKuroPosition] = useState({ x: initialKuroPos.x, y: initialKuroPos.y })
-  const [kuroCurrentLocation, setKuroCurrentLocation] = useState("Kuro's House")
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [isNight, setIsNight] = useState(false)
-
   useEffect(() => {
     const timeInterval = setInterval(() => {
       setCurrentTime(prevTime => {
@@ -208,27 +231,70 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   }, [])
 
   useEffect(() => {
-    const moveInterval = setInterval(() => {
-      const newLocation = locations[Math.floor(Math.random() * locations.length)]
-      setKuroPosition({ x: newLocation.x, y: newLocation.y })
-      setKuroCurrentLocation(newLocation.name)
-    }, 10000)
-    return () => clearInterval(moveInterval)
-  }, [])
+    // console.log('Updated Time:', moment(currentTime).format('YYYY-MM-DD HH:mm'));
+    if ( moment(currentTime).format('YYYY-MM-DD') !== moment(currentTime).format('YYYY-MM-DD') )
+      handlePlanDate(currentTime)
 
-  // Dialog state handlers (same as before)
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
-  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false)
-  const [isKuroStatsDialogOpen, setIsKuroStatsDialogOpen] = useState(false)
-  const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string } | null>(null)
-  const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
+    if ( currentTime.getMinutes() % 15 == 0 )
+        handleFetchActivity(currentTime)
+  }, [currentTime])
+
+  useEffect(() => {
+    const kuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
+    const miloActivity = agents.find((agent) => agent.name == 'Milo')
+    const theoActivity = agents.find((agent) => agent.name == 'Theo')
+    const newKuroLocation = locations.find((location) => location.name == kuroAcitivity?.location[0])
+    const newMiloLocation = locations.find((location) => location.name == miloActivity?.location[0])
+    const newTheoLocation = locations.find((location) => location.name == theoActivity?.location[0])
+
+    if ( newKuroLocation ) {
+      setKuroPosition({ x: newKuroLocation.x, y: newKuroLocation.y })
+      setKuroCurrentLocation(newKuroLocation.name)
+    }
+
+    if ( newMiloLocation ) {
+      setMiloPosition({ x: newMiloLocation.x, y: newMiloLocation.y })
+      setMiloCurrentLocation(newMiloLocation.name)
+    }
+
+    if ( newTheoLocation ) {
+      setTheoPosition({ x: newTheoLocation.x, y: newTheoLocation.y })
+      setTheoCurrentLocation(newTheoLocation.name)
+    }
+    
+  }, [agents])
+
+  const handlePlanDate = async (date: Date) => {
+    try {
+      const response = await fetch("/api/plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ date: moment(date).format('YYYY-MM-DD') }),
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch time");
+
+      const data = await response.json();
+      console.log('success plan: ' + data.success);
+    } catch (error) {
+      console.error("Error fetching time:", error);
+    }
+  };
+
+  const handleFetchActivity = async (date: Date) => {
+    dispatch(fetchAgentActivity(date));
+  };
 
   const handleLocationClick = (location: Location) => {
     setSelectedLocation(location)
     setIsLocationDialogOpen(true)
   }
-  const handleKuroClick = () => {
-    setIsKuroStatsDialogOpen(true)
+
+  const handleCharacterClick = (name: string) => {
+    setSelectedCharacterName(name);
+    setIsCharacterStatsDialogOpen(true)
   }
   const handleAgentClick = (agent: { id: number, name: string, location: string, avatar: string }) => {
     setSelectedAgent(agent)
@@ -367,11 +433,11 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  onMouseEnter={() => setHoveredLocation("Kuro's House")}
+                  onMouseEnter={() => setHoveredLocation("Kuro")}
                   onMouseLeave={() => setHoveredLocation(null)}
                   variant="ghost"
                   className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
-                  onClick={handleKuroClick}
+                  onClick={(e) => handleCharacterClick('Kuro')}
                   aria-label="Kuro's current location"
                 >
                   <Cat className="w-8 h-8 text-yellow-400" aria-hidden="true" />
@@ -379,6 +445,58 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
               </TooltipTrigger>
               <TooltipContent>
                 <p>{kuroCurrentLocation}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* Milo's Avatar */}
+        <div
+          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
+          style={{ left: `${miloPosition.x}%`, top: `${miloPosition.y}%`, zIndex: 102 }}
+        >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onMouseEnter={() => setHoveredLocation("Milo")}
+                  onMouseLeave={() => setHoveredLocation(null)}
+                  variant="ghost"
+                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
+                  onClick={(e) => handleCharacterClick('Milo')}
+                  aria-label="Kuro's current location"
+                >
+                  <Dog className="w-8 h-8 text-yellow-400" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{miloCurrentLocation}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* Theo's Avatar */}
+        <div
+          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
+          style={{ left: `${theoPosition.x}%`, top: `${theoPosition.y}%`, zIndex: 102 }}
+        >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onMouseEnter={() => setHoveredLocation("Theo")}
+                  onMouseLeave={() => setHoveredLocation(null)}
+                  variant="ghost"
+                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
+                  onClick={(e) => handleCharacterClick('Theo')}
+                  aria-label="Kuro's current location"
+                >
+                  <Bird className="w-8 h-8 text-yellow-400" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{theoCurrentLocation}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -497,7 +615,10 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
         </DialogContent>
       </Dialog>
 
-      <KuroStatsDialog open={isKuroStatsDialogOpen} onOpenChange={setIsKuroStatsDialogOpen} />
+      {/* Kuro Stats Dialog */}
+      <CharacterStatsDialog open={isCharacterStatsDialogOpen} onOpenChange={setIsCharacterStatsDialogOpen} name={selectedCharacterName} />
+
+      {/* AI Agent Dialog */}
       <AIAgentDialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen} agent={selectedAgent} />
       
       {/* Expandable Chat */}

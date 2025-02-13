@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Cat, Send } from 'lucide-react'
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 type Thought = {
   id: number
@@ -14,28 +16,23 @@ type Thought = {
 }
 
 export default function AgentInterface() {
+  const agents = useSelector((state: RootState) => state.agentActivity.agents)
+
   const [thoughts, setThoughts] = useState<Thought[]>([])
   const [newThought, setNewThought] = useState('')
 
+
   useEffect(() => {
-    const thoughtInterval = setInterval(() => {
-      const randomThoughts = [
-        "I wonder if there are any birds outside...",
-        "That sunny spot on the couch looks perfect for a nap.",
-        "I smell something delicious from the kitchen!",
-        "I think I heard the sound of a can opener...",
-        "Maybe I should explore the top of the bookshelf today.",
-      ]
+    const agent = agents.find((agent) => agent.name == 'Kuro')
+    if ( agent ) {
       const newThought = {
         id: Date.now(),
-        content: randomThoughts[Math.floor(Math.random() * randomThoughts.length)],
+        content: agent.thoughts,
         timestamp: new Date(),
       }
-      setThoughts(prev => [...prev, newThought].slice(-10)) // Keep only the last 10 thoughts
-    }, 15000) // New thought every 15 seconds
-
-    return () => clearInterval(thoughtInterval)
-  }, [])
+      setThoughts(prev => [...prev, newThought].slice(-10))
+    }
+  }, [agents])
 
   const handleSubmitThought = (e: React.FormEvent) => {
     e.preventDefault()

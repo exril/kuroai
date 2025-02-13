@@ -3,8 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Progress } from "@/components/ui/progress"
 import { Cat, Battery, Brain, HeartPulse } from 'lucide-react'
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { capitalizeFirstLetter } from '@/lib/utils'
 
 export default function AgentSidebar() {
+  const agents = useSelector((state: RootState) => state.agentActivity.agents)
   const [stats, setStats] = useState({
     name: "Kuro",
     mood: "Happy",
@@ -14,16 +18,17 @@ export default function AgentSidebar() {
   })
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStats(prev => ({
-        ...prev,
-        energy: Math.max(0, Math.min(100, prev.energy + Math.floor(Math.random() * 10) - 5)),
-        health: Math.max(0, Math.min(100, prev.health + Math.floor(Math.random() * 5) - 2)),
-      }))
-    }, 10000)
-
-    return () => clearInterval(interval)
-  }, [])
+    const Kuro = agents.find((agent) => agent.name == 'Kuro')
+    if ( Kuro == undefined ) return ;
+    
+    setStats({
+      name: 'Kuro',
+      mood:  capitalizeFirstLetter(Kuro.emotion),
+      energy: Kuro.basic_needs.energy * 10,
+      health: Kuro.basic_needs.health * 10,
+      thoughts: Kuro.thoughts
+    })
+  }, [agents])
 
   return (
     <div className="h-full p-4">

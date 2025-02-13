@@ -1,31 +1,33 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { MapPin, Heart, MessageCircle, Clock } from 'lucide-react'
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 const AIAgentDialog = ({ open, onOpenChange, agent }) => {
   if (!agent) return null
+
+  const agents = useSelector((state: RootState) => state.agentActivity.agents)
+  const [mood, setMood] = useState("Happy")
+  const [activity, setActivity] = useState("")
+  const [location, setLocation] = useState(agent.location)
+  const [relationWithKuro, setRelationWithKuro] = useState(0)
 
   const relationshipLevel = Math.floor(Math.random() * 5) + 1
   const interactionCount = Math.floor(Math.random() * 100)
   const lastInteraction = Math.floor(Math.random() * 24) + 1
 
-  const getRandomMood = () => {
-    const moods = ["Happy", "Excited", "Curious", "Relaxed", "Busy", "Thoughtful"]
-    return moods[Math.floor(Math.random() * moods.length)]
-  }
+  useEffect(() => {
+    const agentActivity = agents.find((agt) => agt.name == agent.name)
 
-  const getRandomActivity = () => {
-    const activities = [
-      "Reading a book",
-      "Chatting with friends",
-      "Working on a project",
-      "Enjoying a coffee",
-      "Taking a walk",
-      "Shopping for groceries"
-    ]
-    return activities[Math.floor(Math.random() * activities.length)]
-  }
+    if ( agentActivity == undefined ) return
+    
+    setMood(agentActivity.emotion)
+    setActivity(agentActivity.activity.split('>')[0])
+    setLocation(agentActivity.location.join(" > "))
+    setRelationWithKuro(agentActivity.social_relationships['Kuro']?.closeness / 2 | 0)
+  }, [agents])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,8 +43,8 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
               <Heart className="w-5 h-5 mr-2 text-red-400" />
               Relationship with Kuro
             </h3>
-            <Progress value={relationshipLevel * 20} className="h-2 mb-2" />
-            <p className="text-sm text-slate-300">Level {relationshipLevel} / 5</p>
+            <Progress value={relationWithKuro * 20} className="h-2 mb-2" />
+            <p className="text-sm text-slate-300">Level {relationWithKuro} / 5</p>
           </div>
           <div className="bg-slate-700/50 p-3 rounded-lg">
             <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center">
@@ -57,15 +59,15 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
               <MapPin className="w-5 h-5 mr-2 text-green-400" />
               Current Location
             </h3>
-            <p className="text-sm text-slate-300">{agent.location}</p>
+            <p className="text-sm text-slate-300">{location}</p>
           </div>
           <div className="bg-slate-700/50 p-3 rounded-lg">
             <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center">
               <Clock className="w-5 h-5 mr-2 text-purple-400" />
               Current Status
             </h3>
-            <p className="text-sm text-slate-300">Mood: {getRandomMood()}</p>
-            <p className="text-sm text-slate-300">Activity: {getRandomActivity()}</p>
+            <p className="text-sm text-slate-300">Mood: { mood }</p>
+            <p className="text-sm text-slate-300">Activity: { activity }</p>
           </div>
         </div>
       </DialogContent>
