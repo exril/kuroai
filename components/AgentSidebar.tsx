@@ -27,7 +27,7 @@ export default function AgentSidebar() {
       mood:  capitalizeFirstLetter(Kuro.emotion),
       energy: Kuro.basic_needs.energy * 10,
       health: Kuro.basic_needs.health * 10,
-      thoughts: "I wonder what adventure awaits me today!"
+      thoughts: Kuro.thoughts
     })
   }, [agents])
 

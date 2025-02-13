@@ -190,7 +190,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [kuroCurrentLocation, setKuroCurrentLocation] = useState("Kuro's House")
   const [miloCurrentLocation, setMiloCurrentLocation] = useState("Coffee Shop")
   const [theoCurrentLocation, setTheoCurrentLocation] = useState("Grocery Store")
-  const [currentTime, setCurrentTime] = useState(new Date(2025, 0, Math.floor(Math.random() * 7) + 1, 6, 0, 0))
+  const [currentTime, setCurrentTime] = useState(new Date(2025, 0, /*Math.floor(Math.random() * 7) +*/ 1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
   // State for coordinating hover on buttons and structures
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null)

@@ -23,7 +23,7 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }) => {
         activity: agent.activity.split('>')[0],
         mood:  capitalizeFirstLetter(agent.emotion),
         energy: agent.basic_needs.energy * 10,
-        thoughts: "I wonder what adventure awaits me today!"
+        thoughts: agent.thoughts
       })
     }
   }, [agents])
