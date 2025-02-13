@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch } from "react-redux";
 import activityReducer from "./slices/activitySlice";
+import interactReducer from "./slices/interactionSlice";
 
 export const store = configureStore({
   reducer: {
     agentActivity: activityReducer,
+    agentInteracts: interactReducer
   },
 });
 

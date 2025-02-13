@@ -9,24 +9,28 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
   if (!agent) return null
 
   const agents = useSelector((state: RootState) => state.agentActivity.agents)
+  const agentInteracts = useSelector((state: RootState) => state.agentInteracts.interacts)
+
   const [mood, setMood] = useState("Happy")
   const [activity, setActivity] = useState("")
   const [location, setLocation] = useState(agent.location)
   const [relationWithKuro, setRelationWithKuro] = useState(0)
-
-  const relationshipLevel = Math.floor(Math.random() * 5) + 1
-  const interactionCount = Math.floor(Math.random() * 100)
-  const lastInteraction = Math.floor(Math.random() * 24) + 1
+  const [interactCount, setInteractCount] = useState(0)
+  const [interactDate, setInteractDate] = useState<Date | null>(null)
 
   useEffect(() => {
     const agentActivity = agents.find((agt) => agt.name == agent.name)
+    const interact = agentInteracts[agent.id]
 
-    if ( agentActivity == undefined ) return
+    if ( agentActivity ) {
+      setMood(agentActivity.emotion)
+      setActivity(agentActivity.activity.split('>')[0])
+      setLocation(agentActivity.location.join(" > "))
+      setRelationWithKuro(agentActivity.social_relationships['Kuro']?.closeness / 2 | 0)  
+    }
     
-    setMood(agentActivity.emotion)
-    setActivity(agentActivity.activity.split('>')[0])
-    setLocation(agentActivity.location.join(" > "))
-    setRelationWithKuro(agentActivity.social_relationships['Kuro']?.closeness / 2 | 0)
+    setInteractCount(interact.totalInteractions)
+    setInteractDate(interact.lastInteractDate)
   }, [agents])
 
   return (
@@ -51,8 +55,8 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
               <MessageCircle className="w-5 h-5 mr-2 text-blue-400" />
               Interactions
             </h3>
-            <p className="text-sm text-slate-300">Total interactions: {interactionCount}</p>
-            <p className="text-sm text-slate-300">Last interaction: {lastInteraction} hours ago</p>
+            <p className="text-sm text-slate-300">Total interactions: {interactCount}</p>
+            <p className="text-sm text-slate-300">Last interaction: {interactDate} hours ago</p>
           </div>
           <div className="bg-slate-700/50 p-3 rounded-lg">
             <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center">
