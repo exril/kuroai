@@ -1,12 +1,9 @@
 import WorldView from '@/components/WorldView'
-import AgentInterface from '@/components/AgentInterface'
 
 export default function Home() {
   return (
-    <div className="space-y-6">
+    <div className="fixed inset-0 overflow-hidden">
       <WorldView />
-      <AgentInterface />
     </div>
   )
 }
-
