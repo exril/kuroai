@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Cat, Cloud, Sun, CloudRain, CloudSun, CloudDrizzle, Users, Clock,
   Coffee, TreesIcon as Tree, Building2, Mail, Home, Newspaper, ShoppingCart, Shirt,
-  Moon, Sunrise
+  Moon, Sunrise, Dog, Bird
 } from 'lucide-react'
 import CharacterStatsDialog from './CharacterStatsDialog'
 import AIAgentDialog from './AIAgentDialog'
