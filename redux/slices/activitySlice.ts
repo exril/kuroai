@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import moment from 'moment';
 
 export const fetchAgentActivity = createAsyncThunk("data/fetchAgentActivity", async (date: Date) => {
@@ -9,14 +9,14 @@ export const fetchAgentActivity = createAsyncThunk("data/fetchAgentActivity", as
     },
     body: JSON.stringify({ 
       date: moment(new Date(2025, 1, (date.getDate() - 1) % 7 + 1)).format('YYYY-MM-DD'),
-      time: moment(date).format('HH:mm')
+      time: `${String((date.getHours() - 6) % 12 + 6).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
     }),
   })
 
   if (!response.ok) throw new Error("Failed to fetch time")
 
   const data = await response.json()
-  console.log(data.data.agents)
+  console.log(data.data)
   return data.data
 });
 

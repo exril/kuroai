@@ -2,7 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 
 interface Interact {
   totalInteractions: number,
-  lastInteractDate: Date | null
+  lastInteractDate: string | null
 }
 
 interface InteractState {
@@ -20,11 +20,12 @@ const interactSlice = createSlice({
   name: "agentInteracts",
   initialState,
   reducers: {
-    increaseInteract: (state, action: PayloadAction<{index: number, date: Date}>) => {
+    increaseInteract: (state, action: PayloadAction<{index: number, date: string}>) => {
       state.interacts[action.payload.index].totalInteractions ++;
       state.interacts[action.payload.index].lastInteractDate = action.payload.date;
     },
   },
 });
 
+export const { increaseInteract } = interactSlice.actions;
 export default interactSlice.reducer;

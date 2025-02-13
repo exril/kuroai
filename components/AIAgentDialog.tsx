@@ -5,7 +5,7 @@ import { MapPin, Heart, MessageCircle, Clock } from 'lucide-react'
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 
-const AIAgentDialog = ({ open, onOpenChange, agent }) => {
+const AIAgentDialog = ({ open, onOpenChange, agent, date }) => {
   if (!agent) return null
 
   const agents = useSelector((state: RootState) => state.agentActivity.agents)
@@ -30,7 +30,7 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
     }
     
     setInteractCount(interact.totalInteractions)
-    setInteractDate(interact.lastInteractDate)
+    if (interact.lastInteractDate) setInteractDate(new Date(interact.lastInteractDate!))
   }, [agents])
 
   return (
@@ -56,7 +56,10 @@ const AIAgentDialog = ({ open, onOpenChange, agent }) => {
               Interactions
             </h3>
             <p className="text-sm text-slate-300">Total interactions: {interactCount}</p>
-            <p className="text-sm text-slate-300">Last interaction: {interactDate} hours ago</p>
+            <p className="text-sm text-slate-300">Last interaction: { interactDate ?
+                Math.floor((date.getTime() - interactDate!.getTime()) / (24 * 60 * 60000))
+                : ''
+              } hours ago</p>
           </div>
           <div className="bg-slate-700/50 p-3 rounded-lg">
             <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center">

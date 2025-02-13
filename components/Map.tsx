@@ -23,6 +23,7 @@ import moment from 'moment';
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "@/redux/store";
 import { fetchAgentActivity } from "@/redux/slices/activitySlice";
+import { increaseInteract } from "@/redux/slices/interactionSlice";
 
 
 // Define MovingClouds so they animate over the map.
@@ -148,6 +149,10 @@ interface MapProps {
 const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const dispatch = useAppDispatch();
 
+  // Agents activities and Conversations from Redux
+  const agents = useSelector((state: RootState) => state.agentActivity.agents);
+  const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
+
   // Panning and zoom state
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
@@ -173,10 +178,8 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [kuroCurrentLocation, setKuroCurrentLocation] = useState("Kuro's House")
   const [miloCurrentLocation, setMiloCurrentLocation] = useState("Coffee Shop")
   const [theoCurrentLocation, setTheoCurrentLocation] = useState("Grocery Store")
-  const [currentTime, setCurrentTime] = useState(new Date(2025, 0, Math.floor(Math.random() * 7) + 1, 6, 0, 0))
+  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, /*Math.floor(Math.random() * 7) + */1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
-  const agents = useSelector((state: RootState) => state.agentActivity.agents);
-
 
   useEffect(() => {
     const updateScale = () => {
@@ -260,7 +263,26 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
       setTheoCurrentLocation(newTheoLocation.name)
     }
     
+    agents.forEach((agent) => {
+      
+    })
   }, [agents])
+
+  useEffect(() => {
+    if ( conversations ){
+      Object.values(conversations!).forEach((conversation) => {
+        if ( conversation[0].length < 2 ) return ;
+        if ( conversation[0][0].name == 'Kuro' ) {
+          const aiAgent = getAgentWithName(conversation[0][1].name);
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: currentTime.toLocaleString() }))
+        }
+        if ( conversation[0][1].name == 'Kuro' ) {
+          const aiAgent = getAgentWithName(conversation[0][0].name);
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: currentTime.toLocaleString() }))
+        }
+      })
+    }
+  }, [conversations])
 
   const handlePlanDate = async (date: Date) => {
     try {
@@ -310,6 +332,9 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   }
   const getAgentsAtLocation = (locationName: string) => {
     return aiAgents.filter(agent => agent.location === locationName)
+  }
+  const getAgentWithName = (name: string) => {
+    return aiAgents.find(agent => agent.name === name)
   }
 
   return (
@@ -617,10 +642,10 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
       <CharacterStatsDialog open={isCharacterStatsDialogOpen} onOpenChange={setIsCharacterStatsDialogOpen} name={selectedCharacterName} />
 
       {/* AI Agent Dialog */}
-      <AIAgentDialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen} agent={selectedAgent} />
+      <AIAgentDialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen} agent={selectedAgent} date={currentTime} />
       
       {/* Expandable Chat */}
-      <ExpandableChat />
+      <ExpandableChat currentTime={currentTime} />
     </div>
   )
 }

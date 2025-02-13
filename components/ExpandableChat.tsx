@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 // Inline custom scrollbar styling
 const customScrollbarStyles = `
@@ -44,13 +46,16 @@ const randomCharacters = Object.keys(characterProfiles).filter(
   (name) => name !== 'System' && name !== 'Kuro'
 )
 
-export default function ExpandableChat() {
+export default function ExpandableChat(currentTime) {
+  const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
+  const time = useSelector((state: RootState) => state.agentActivity.time);
+
   const [isExpanded, setIsExpanded] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Helper: add a new message with a truly unique ID
-  const addMessage = (sender: string, content: string) => {
+  const addMessage = (sender: string, content: string, time: string) => {
     const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
     setMessages((prev) => [
       ...prev,
@@ -58,24 +63,30 @@ export default function ExpandableChat() {
         id: uniqueId,
         sender,
         content,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: time,
       },
     ])
   }
 
   // Simulate incoming messages
   useEffect(() => {
-    addMessage('System', "Welcome to Kuro's World Chat Logs!")
-    addMessage('Alice', 'Hey Kuro, how are you doing today?')
-    addMessage('Kuro', "Meow! I'm doing great, thanks for asking!")
-
-    const interval = setInterval(() => {
-      const randomChar = randomCharacters[Math.floor(Math.random() * randomCharacters.length)]
-      addMessage(randomChar, "Hey Kuro! What's new in your adventure?")
-    }, 15000)
-
-    return () => clearInterval(interval)
+    addMessage('System', "Welcome to Kuro's World Chat Logs!", "6:00")
   }, [])
+
+  // Add messages
+  useEffect(() => {
+    if ( conversations && Object.values(conversations).length > 0 ) {
+      const conversation = Object.values(conversations)[0];
+
+      for(let i = 0; i < conversation[0].length; ++ i){
+        const value = conversation[0][i]
+        if ( value.text ) {
+          addMessage(value.name, value.text, time)
+          break;
+        }
+      }
+    }
+  }, [conversations])
 
   // Auto-scroll if expanded
   useEffect(() => {
