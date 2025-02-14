@@ -24,7 +24,8 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
   })
 
   useEffect(() => {
-    if ( agents === undefined ) return;
+    if (!agents) return;
+
     const agent = agents.find((agent) => agent.name == name)
 
     if ( agent ) {
@@ -36,7 +37,7 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
         relationWithKuro: agent.social_relationships['Kuro']?.closeness / 2 | 0
       })
     }
-  }, [agents])
+  }, [agents, name]);
 
   const getMoodEmoji = (mood: string) => {
     switch (mood) {
