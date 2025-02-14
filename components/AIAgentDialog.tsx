@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress"
 import { MapPin, Heart, MessageCircle, Clock } from 'lucide-react'
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { capitalizeFirstLetter } from '@/lib/utils';
 
 const AIAgentDialog = ({ open, onOpenChange, agent, date }) => {
   if (!agent) return null
@@ -20,18 +21,23 @@ const AIAgentDialog = ({ open, onOpenChange, agent, date }) => {
 
   useEffect(() => {
     const agentActivity = agents.find((agt) => agt.name == agent.name)
-    const interact = agentInteracts[agent.id]
+    const interact = agentInteracts[agent.id - 1]
 
     if ( agentActivity ) {
       setMood(agentActivity.emotion)
       setActivity(agentActivity.activity.split('>')[0])
       setLocation(agentActivity.location.join(" > "))
       setRelationWithKuro(agentActivity.social_relationships['Kuro']?.closeness / 2 | 0)  
+    } else {
+      setMood("Happy")
+      setActivity("")
+      setLocation(agent.location)
+      setRelationWithKuro(0)
     }
     
     setInteractCount(interact.totalInteractions)
     if (interact.lastInteractDate) setInteractDate(new Date(interact.lastInteractDate!))
-  }, [agents])
+  }, [agent, agents])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,8 +79,8 @@ const AIAgentDialog = ({ open, onOpenChange, agent, date }) => {
               <Clock className="w-5 h-5 mr-2 text-purple-400" />
               Current Status
             </h3>
-            <p className="text-sm text-slate-300">Mood: { mood }</p>
-            <p className="text-sm text-slate-300">Activity: { activity }</p>
+            <p className="text-sm text-slate-300">Mood: { capitalizeFirstLetter(mood) }</p>
+            <p className="text-sm text-slate-300">Activity: { capitalizeFirstLetter(activity) }</p>
           </div>
         </div>
       </DialogContent>

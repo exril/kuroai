@@ -32,12 +32,13 @@ type Message = {
 }
 
 const characterProfiles: Record<string, { pfp: string; color: string }> = {
-  Alice: { pfp: '/pfps/pfp1.png', color: 'bg-pink-500' },
-  Bob: { pfp: '/pfps/pfp2.png', color: 'bg-blue-500' },
-  Charlie: { pfp: '/pfps/pfp3.png', color: 'bg-green-500' },
-  Diana: { pfp: '/pfps/pfp4.png', color: 'bg-purple-500' },
-  Ethan: { pfp: '/pfps/pfp5.png', color: 'bg-orange-500' },
-  Kuro: { pfp: '/pfps/pfp6.png', color: 'bg-yellow-500' },
+  Kuro: { pfp: '/pfps/pfp1.png', color: 'bg-pink-500' },
+  Theo: { pfp: '/pfps/pfp2.png', color: 'bg-purple-500' },
+  Milo: { pfp: '/pfps/pfp3.png', color: 'bg-green-500' },
+  Klaus: { pfp: '/pfps/pfp4.png', color: 'bg-blue-500' },
+  Ava: { pfp: '/pfps/pfp5.png', color: 'bg-lime-500' },
+  Alice: { pfp: '/pfps/pfp6.png', color: 'bg-amber-500' },
+  Ivy: { pfp: '/pfps/pfp7.png', color: 'bg-yellow-500' },
   System: { pfp: '', color: 'bg-slate-500' },
 }
 

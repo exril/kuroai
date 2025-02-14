@@ -24,6 +24,7 @@ import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "@/redux/store";
 import { fetchAgentActivity } from "@/redux/slices/activitySlice";
 import { increaseInteract } from "@/redux/slices/interactionSlice";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 
 // Define MovingClouds so they animate over the map.
@@ -102,13 +103,16 @@ const locations: Location[] = [
 ]
 
 const aiAgents = [
-  { id: 1, name: "Alice", location: "Coffee Shop", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 2, name: "Bob", location: "Park", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 3, name: "Charlie", location: "Office Building", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 4, name: "Diana", location: "Postal Office", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 5, name: "Ethan", location: "Newspaper Stand", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 6, name: "Fiona", location: "Grocery Store", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 7, name: "George", location: "Fashion Store", avatar: "/placeholder.svg?height=40&width=40" },
+  { id: 1, name: "Kuro", location: "Kuro's House", avatar: "/pfps/pfp1.png", color: 'bg-amber-600', isMainAgent: true },
+  { id: 2, name: "Theo", location: "Grocery Store", avatar: "/pfps/pfp2.png", color: 'bg-amber-600', isMainAgent: true },
+  { id: 3, name: "Milo", location: "Coffee Shop", avatar: "/pfps/pfp3.png", color: 'bg-amber-600', isMainAgent: true },
+  { id: 4, name: "Alice", location: "Coffee Shop", avatar: "/pfps/pfp6.png", color: 'bg-amber-600', isMainAgent: false },
+  { id: 5, name: "Bob", location: "Park", avatar: "", color: 'bg-green-600', isMainAgent: false },
+  { id: 6, name: "Klaus", location: "Office Building", avatar: "/pfps/pfp4.png", color: 'bg-blue-600', isMainAgent: false },
+  { id: 7, name: "Diana", location: "Postal Office", avatar: "", color: 'bg-red-600', isMainAgent: false },
+  { id: 8, name: "Ethan", location: "Newspaper Stand", avatar: "", color: 'bg-orange-600', isMainAgent: false },
+  { id: 9, name: "Ava", location: "Grocery Store", avatar: "/pfps/pfp5.png", color: 'bg-lime-600', isMainAgent: false },
+  { id: 10, name: "George", location: "Fashion Store", avatar: "", color: 'bg-pink-600', isMainAgent: false },
 ]
 
 // Mapping for structures (hover effect controlled via buttons)
@@ -142,11 +146,10 @@ const pannedLayers = [
 ]
 
 interface MapProps {
-  currentEvent: string
   weather: string
 }
 
-const MapComponent = ({ currentEvent, weather }: MapProps) => {
+const MapComponent = ({ weather }: MapProps) => {
   const dispatch = useAppDispatch();
 
   // Agents activities and Conversations from Redux
@@ -161,23 +164,16 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   // Hover state (set via buttons only)
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null)
+  const [currentEvent, setCurrentEvent] = useState("Kuro is sleeping")
 
   // Initialize Kuro at his house
-  const initialKuroPos = locations.find(loc => loc.name === "Kuro's House") || { x: 50, y: 80 }
-  const initialMiloPos = locations.find(loc => loc.name === "Coffee Shop") || { x: 50, y: 80 }
-  const initialTheoPos = locations.find(loc => loc.name === "Grocery Store") || { x: 50, y: 80 }
-  const [kuroPosition, setKuroPosition] = useState({ x: initialKuroPos.x, y: initialKuroPos.y })
-  const [miloPosition, setMiloPosition] = useState({ x: initialMiloPos.x, y: initialMiloPos.y })
-  const [theoPosition, setTheoPosition] = useState({ x: initialTheoPos.x, y: initialTheoPos.y })
+  const [positions, setPositions] = useState<Array<string>>(aiAgents.filter((agent) => agent.isMainAgent).map((agent) => agent.location))
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false)
   const [isCharacterStatsDialogOpen, setIsCharacterStatsDialogOpen] = useState(false)
   const [selectedCharacterName, setSelectedCharacterName] = useState('Kuro')
-  const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string } | null>(null)
+  const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string, color: string, isMainAgent: boolean } | null>(null)
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
-  const [kuroCurrentLocation, setKuroCurrentLocation] = useState("Kuro's House")
-  const [miloCurrentLocation, setMiloCurrentLocation] = useState("Coffee Shop")
-  const [theoCurrentLocation, setTheoCurrentLocation] = useState("Grocery Store")
   const [currentTime, setCurrentTime] = useState(new Date(2025, 1, /*Math.floor(Math.random() * 7) + */1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
 
@@ -242,30 +238,23 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
 
   useEffect(() => {
     const kuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
-    const miloActivity = agents.find((agent) => agent.name == 'Milo')
-    const theoActivity = agents.find((agent) => agent.name == 'Theo')
-    const newKuroLocation = locations.find((location) => location.name == kuroAcitivity?.location[0])
-    const newMiloLocation = locations.find((location) => location.name == miloActivity?.location[0])
-    const newTheoLocation = locations.find((location) => location.name == theoActivity?.location[0])
 
-    if ( newKuroLocation ) {
-      setKuroPosition({ x: newKuroLocation.x, y: newKuroLocation.y })
-      setKuroCurrentLocation(newKuroLocation.name)
-    }
-
-    if ( newMiloLocation ) {
-      setMiloPosition({ x: newMiloLocation.x, y: newMiloLocation.y })
-      setMiloCurrentLocation(newMiloLocation.name)
-    }
-
-    if ( newTheoLocation ) {
-      setTheoPosition({ x: newTheoLocation.x, y: newTheoLocation.y })
-      setTheoCurrentLocation(newTheoLocation.name)
+    if ( kuroAcitivity ) {
+      setCurrentEvent(`Kuro ${kuroAcitivity.activity.split('>')[0]}`)
     }
     
-    agents.forEach((agent) => {
-      
+    let newPosition: Array<string> = []
+    aiAgents.forEach((agent) => {
+      if ( agent.isMainAgent ) {
+        const agentActivity = agents.find((item) => item.name == agent.name)
+        const newLocation = locations.find((location) => location.name == agentActivity?.location[0])
+
+        if ( newLocation ) newPosition.push(newLocation.name);
+        else newPosition.push(positions[agent.id - 1])
+      }
     })
+
+    setPositions(newPosition);
   }, [agents])
 
   useEffect(() => {
@@ -316,7 +305,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
     setSelectedCharacterName(name);
     setIsCharacterStatsDialogOpen(true)
   }
-  const handleAgentClick = (agent: { id: number, name: string, location: string, avatar: string }) => {
+  const handleAgentClick = (agent: { id: number, name: string, location: string, avatar: string, color: string, isMainAgent: boolean }) => {
     setSelectedAgent(agent)
     setIsAgentDialogOpen(true)
   }
@@ -331,10 +320,13 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
     }
   }
   const getAgentsAtLocation = (locationName: string) => {
-    return aiAgents.filter(agent => agent.location === locationName)
+    return aiAgents.filter(agent => agent.location === locationName && !agent.isMainAgent)
   }
   const getAgentWithName = (name: string) => {
     return aiAgents.find(agent => agent.name === name)
+  }
+  const getLocation = (location: string) => {
+    return locations.find((item) => item.name == location)
   }
 
   return (
@@ -447,83 +439,39 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
           </Popover>
         ))}
 
-        {/* Kuro's Avatar */}
-        <div
-          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
-          style={{ left: `${kuroPosition.x}%`, top: `${kuroPosition.y}%`, zIndex: 102 }}
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onMouseEnter={() => setHoveredLocation("Kuro")}
-                  onMouseLeave={() => setHoveredLocation(null)}
-                  variant="ghost"
-                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
-                  onClick={(e) => handleCharacterClick('Kuro')}
-                  aria-label="Kuro's current location"
-                >
-                  <Cat className="w-8 h-8 text-yellow-400" aria-hidden="true" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{kuroCurrentLocation}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-
-        {/* Milo's Avatar */}
-        <div
-          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
-          style={{ left: `${miloPosition.x}%`, top: `${miloPosition.y}%`, zIndex: 102 }}
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onMouseEnter={() => setHoveredLocation("Milo")}
-                  onMouseLeave={() => setHoveredLocation(null)}
-                  variant="ghost"
-                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
-                  onClick={(e) => handleCharacterClick('Milo')}
-                  aria-label="Kuro's current location"
-                >
-                  <Dog className="w-8 h-8 text-yellow-400" aria-hidden="true" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{miloCurrentLocation}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-
-        {/* Theo's Avatar */}
-        <div
-          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
-          style={{ left: `${theoPosition.x}%`, top: `${theoPosition.y}%`, zIndex: 102 }}
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onMouseEnter={() => setHoveredLocation("Theo")}
-                  onMouseLeave={() => setHoveredLocation(null)}
-                  variant="ghost"
-                  className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
-                  onClick={(e) => handleCharacterClick('Theo')}
-                  aria-label="Kuro's current location"
-                >
-                  <Bird className="w-8 h-8 text-yellow-400" aria-hidden="true" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{theoCurrentLocation}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        {/* Main Avatars */}
+        {aiAgents.map((agent) => (
+          agent.isMainAgent && (
+            <div
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
+              style={{ left: `${getLocation(positions[agent.id - 1])!.x + 2 * Math.pow(-1, agent.id + Math.floor(agent.id / 2))}%`, top: `${getLocation(positions[agent.id - 1])!.y + 2 * Math.pow(-1, agent.id)}%`, zIndex: 102 }}
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onMouseEnter={() => setHoveredLocation("Kuro")}
+                      onMouseLeave={() => setHoveredLocation(null)}
+                      variant="ghost"
+                      className="w-12 h-12 rounded-full bg-black border-2 border-yellow-400 shadow-md transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-opacity-50 p-0"
+                      onClick={(e) => handleCharacterClick(agent.name)}
+                      aria-label="Kuro's current location"
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={agent.avatar} alt={agent.name} />
+                        <AvatarFallback className={agent.color}>
+                          {agent.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{positions[agent.id - 1]}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+        )))}
       </div>
 
       {/* Fixed UI Overlays (2% padding from edges) */}
@@ -556,7 +504,7 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
       <div className="absolute" style={{ bottom: '2%', left: '2%', zIndex: 1100 }}>
         <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg">
           <h3 className="text-sm font-bold text-yellow-400 mb-1">Kuro's Location</h3>
-          <p className="text-xs text-slate-300">{kuroCurrentLocation}</p>
+          <p className="text-xs text-slate-300">{positions[0]}</p>
         </div>
       </div>
 
@@ -604,7 +552,12 @@ const MapComponent = ({ currentEvent, weather }: MapProps) => {
               <ScrollArea className="h-[300px] pr-4">
                 {selectedLocation && getAgentsAtLocation(selectedLocation.name).map((agent) => (
                   <div key={agent.id} className="flex items-center space-x-4 mb-4 p-3 bg-slate-700 rounded-lg">
-                    <img src={agent.avatar} alt={agent.name} className="w-10 h-10 rounded-full" draggable={false} onDragStart={e => e.preventDefault()} />
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={agent.avatar} alt={agent.name} />
+                      <AvatarFallback className={agent.color}>
+                        {agent.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <h4 className="text-sm font-semibold text-slate-200">{agent.name}</h4>
                       <p className="text-xs text-slate-400">At {agent.location}</p>
