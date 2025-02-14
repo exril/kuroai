@@ -9,7 +9,7 @@ export const fetchAgentActivity = createAsyncThunk("data/fetchAgentActivity", as
     },
     body: JSON.stringify({ 
       date: moment(new Date(2025, 1, 1/*(date.getDate() - 1) % 7 + 1*/)).format('YYYY-MM-DD'),
-      time: `${String((date.getHours() - 6) % 12 + 6).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+      time: `${date.getHours()}:${date.getMinutes()}`
     }),
   })
 

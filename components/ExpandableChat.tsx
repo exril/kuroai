@@ -86,7 +86,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
     }
 
     setCurIndex(index)
-    setMessages(newMessages.slice(-10))
+    setMessages(newMessages)
   }, [queue, currentTime])
 
   // Simulate incoming messages
@@ -103,7 +103,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
         const length = chats.length
         chats.forEach((chat, index) => {
           const tDate = new Date(`${date} ${time}`)
-          if ( chat.text ) addMessageToQueue(chat.name, chat.text, new Date(tDate.getTime() + index * Math.floor(15 * 60000.0 / length)))
+          if ( chat.text ) addMessageToQueue(chat.name, chat.text, new Date(tDate.getTime() + index * Math.floor(30 * 60000.0 / length)))
         })
       })
     }

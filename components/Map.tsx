@@ -236,7 +236,7 @@ const MapComponent = ({ weather }: MapProps) => {
     if ( moment(currentTime).format('YYYY-MM-DD') !== moment(currentTime).format('YYYY-MM-DD') )
       handlePlanDate(currentTime)
 
-    if ( currentTime.getMinutes() % 15 == 0 )
+    if ( currentTime.getMinutes() % 30 == 0 && currentTime.getHours() >= 6 )
         handleFetchActivity(currentTime)
   }, [currentTime])
 
