@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import ExpandableChat from './ExpandableChat'
+import KuroStatus from '@/components/KuroStatus'
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
 } from "@/components/ui/tooltip"
@@ -238,9 +239,10 @@ const MapComponent = ({ weather }: MapProps) => {
   }, [currentTime])
 
   useEffect(() => {
-    const kuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
-
-    if ( kuroAcitivity ) {
+    if (!agents) return;
+    
+    const kuroAcitivity = agents.find((agent) => agent.name === 'Kuro');
+    if (kuroAcitivity) {
       setCurrentEvent(`Kuro ${kuroAcitivity.activity.split('>')[0]}`)
     }
     
@@ -403,7 +405,7 @@ const MapComponent = ({ weather }: MapProps) => {
                 onMouseLeave={() => setHoveredLocation(null)}
                 variant="location"
                 size="icon"
-                className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${location.color}`}
+                className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${location.color} border border-black shadow-[2px_2px_0_0_black] outline outline-1 outline-black`}
                 style={{ left: `${location.x}%`, top: `${location.y}%`, zIndex: 101 }}
                 aria-label={`Visit ${location.name}`}
                 onClick={() => handleLocationClick(location)}
@@ -477,18 +479,19 @@ const MapComponent = ({ weather }: MapProps) => {
 
       {/* Fixed UI Overlays (2% padding from edges) */}
       <div className="absolute" style={{ top: '2%', right: '2%', zIndex: 1100 }}>
-        <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg flex items-center space-x-4">
+        <div className="bg-pink-100 p-3 rounded-2xl border-2 border-black shadow-[2px_2px_0_0_black] flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             {getWeatherIcon(weather)}
-            <span className="text-sm font-bold text-yellow-400">{weather}</span>
+            <span className="text-sm font-bold text-black">{weather}</span>
           </div>
+          <div className="h-8 w-[1px] bg-black/20"></div>
           <div className="flex items-center space-x-2">
             {isNight ? (
-              <Moon className="w-6 h-6 text-blue-200" />
+              <Moon className="w-6 h-6 text-purple-600" />
             ) : (
-              <Sunrise className="w-6 h-6 text-orange-400" />
+              <Sunrise className="w-6 h-6 text-orange-600" />
             )}
-            <span className="text-sm font-bold text-yellow-400">
+            <span className="text-sm font-bold text-black">
               {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
@@ -496,17 +499,7 @@ const MapComponent = ({ weather }: MapProps) => {
       </div>
 
       <div className="absolute" style={{ top: '2%', left: '2%', zIndex: 1100 }}>
-        <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg max-w-xs">
-          <h3 className="text-sm font-bold text-yellow-400 mb-1 font-title">Current Event</h3>
-          <p className="text-xs text-slate-300 font-body">{currentEvent}</p>
-        </div>
-      </div>
-
-      <div className="absolute" style={{ bottom: '2%', left: '2%', zIndex: 1100 }}>
-        <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg">
-          <h3 className="text-sm font-bold text-yellow-400 mb-1 font-title">Kuro's Location</h3>
-          <p className="text-xs text-slate-300 font-body">{positions[0]}</p>
-        </div>
+        <KuroStatus />
       </div>
 
       {/* Dialogs */}

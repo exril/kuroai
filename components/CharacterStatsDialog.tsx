@@ -23,17 +23,18 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
   })
 
   useEffect(() => {
-    const agent = agents.find((agent) => agent.name == name)
-
-    if ( agent ) {
+    if (!agents) return;
+    
+    const agent = agents.find((agent) => agent.name === name);
+    if (agent) {
       setStats({
         activity: agent.activity.split('>')[0],
-        mood:  capitalizeFirstLetter(agent.emotion),
+        mood: capitalizeFirstLetter(agent.emotion),
         energy: agent.basic_needs.energy * 10,
         thoughts: agent.thoughts
-      })
+      });
     }
-  }, [agents])
+  }, [agents, name]);
 
   const getMoodEmoji = (mood: string) => {
     switch (mood) {
