@@ -22,6 +22,7 @@ import AIAgentDialog from './AIAgentDialog'
 import moment from 'moment';
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "@/redux/store";
+import { Agent } from "@/redux/types/agent";
 import { fetchAgentActivity } from "@/redux/slices/activitySlice";
 import { increaseInteract } from "@/redux/slices/interactionSlice";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -92,14 +93,14 @@ interface Location {
 }
 
 const locations: Location[] = [
-  { id: 1, name: "Coffee Shop", x: 81.35, y: 47.90, icon: <Coffee className="w-6 h-6" />, color: "bg-amber-600" },
-  { id: 2, name: "Park", x: 48.44, y: 48.98, icon: <Tree className="w-6 h-6" />, color: "bg-green-600" },
-  { id: 3, name: "Office Building", x: 23.57, y: 34.81, icon: <Building2 className="w-6 h-6" />, color: "bg-blue-600" },
-  { id: 4, name: "Postal Office", x: 79.79, y: 76.20, icon: <Mail className="w-6 h-6" />, color: "bg-red-600" },
-  { id: 5, name: "Kuro's House", x: 48.75, y: 87.59, icon: <Home className="w-6 h-6" />, color: "bg-purple-600" },
-  { id: 6, name: "Newspaper Stand", x: 27.86, y: 73.47, icon: <Newspaper className="w-6 h-6" />, color: "bg-orange-600" },
-  { id: 7, name: "Grocery Store", x: 52.50, y: 17.13, icon: <ShoppingCart className="w-6 h-6" />, color: "bg-lime-600" },
-  { id: 8, name: "Fashion Store", x: 67.02, y: 34.91, icon: <Shirt className="w-6 h-6" />, color: "bg-pink-600" },
+  { id: 1, name: "Coffee Shop", x: 81.35, y: 47.90, icon: <Coffee className="w-4 h-4" />, color: "from-amber-400 to-amber-600" },
+  { id: 2, name: "Park", x: 48.44, y: 48.98, icon: <Tree className="w-4 h-4" />, color: "from-green-400 to-green-600" },
+  { id: 3, name: "Office Building", x: 23.57, y: 34.81, icon: <Building2 className="w-4 h-4" />, color: "from-blue-400 to-blue-600" },
+  { id: 4, name: "Postal Office", x: 79.79, y: 76.20, icon: <Mail className="w-4 h-4" />, color: "from-red-400 to-red-600" },
+  { id: 5, name: "Kuro's House", x: 48.75, y: 87.59, icon: <Home className="w-4 h-4" />, color: "from-purple-400 to-purple-600" },
+  { id: 6, name: "Newspaper Stand", x: 27.86, y: 73.47, icon: <Newspaper className="w-4 h-4" />, color: "from-orange-400 to-orange-600" },
+  { id: 7, name: "Grocery Store", x: 52.50, y: 17.13, icon: <ShoppingCart className="w-4 h-4" />, color: "from-lime-400 to-lime-600" },
+  { id: 8, name: "Fashion Store", x: 67.02, y: 34.91, icon: <Shirt className="w-4 h-4" />, color: "from-pink-400 to-pink-600" },
 ]
 
 const aiAgents = [
@@ -153,7 +154,7 @@ const MapComponent = ({ weather }: MapProps) => {
   const dispatch = useAppDispatch();
 
   // Agents activities and Conversations from Redux
-  const agents = useSelector((state: RootState) => state.agentActivity.agents);
+  const agents = useSelector((state: RootState) => state.agentActivity.agents as Agent[]);
   const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
 
   // Panning and zoom state
@@ -400,9 +401,9 @@ const MapComponent = ({ weather }: MapProps) => {
               <Button
                 onMouseEnter={() => setHoveredLocation(location.name)}
                 onMouseLeave={() => setHoveredLocation(null)}
-                className={`absolute w-12 h-12 rounded-full ${location.color} border-2 border-yellow-600 shadow-md transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
-                  hoveredLocation === location.name ? 'scale-105 ring-2 ring-yellow-400' : ''
-                }`}
+                variant="location"
+                size="icon"
+                className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${location.color}`}
                 style={{ left: `${location.x}%`, top: `${location.y}%`, zIndex: 101 }}
                 aria-label={`Visit ${location.name}`}
                 onClick={() => handleLocationClick(location)}
@@ -412,14 +413,14 @@ const MapComponent = ({ weather }: MapProps) => {
             </PopoverTrigger>
             <PopoverContent className="w-64 p-0">
               <div className="p-4 bg-slate-800 rounded-t-lg">
-                <h3 className="text-lg font-bold text-yellow-400 mb-2">{location.name}</h3>
-                <p className="text-sm text-slate-300">{getLocationDescription(location.name)}</p>
+                <h3 className="text-lg font-bold text-yellow-400 mb-2 font-title">{location.name}</h3>
+                <p className="text-sm text-slate-300 font-body">{getLocationDescription(location.name)}</p>
                 <Button className="w-full" onClick={() => handleLocationClick(location)}>
                   Visit Location
                 </Button>
               </div>
               <div className="p-4 bg-slate-700 rounded-b-lg">
-                <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center">
+                <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center font-title">
                   <Users className="w-4 h-4 mr-2" />
                   Characters Here
                 </h4>
@@ -496,15 +497,15 @@ const MapComponent = ({ weather }: MapProps) => {
 
       <div className="absolute" style={{ top: '2%', left: '2%', zIndex: 1100 }}>
         <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg max-w-xs">
-          <h3 className="text-sm font-bold text-yellow-400 mb-1">Current Event</h3>
-          <p className="text-xs text-slate-300">{currentEvent}</p>
+          <h3 className="text-sm font-bold text-yellow-400 mb-1 font-title">Current Event</h3>
+          <p className="text-xs text-slate-300 font-body">{currentEvent}</p>
         </div>
       </div>
 
       <div className="absolute" style={{ bottom: '2%', left: '2%', zIndex: 1100 }}>
         <div className="bg-slate-800/90 p-2 rounded-lg border border-yellow-400 shadow-lg">
-          <h3 className="text-sm font-bold text-yellow-400 mb-1">Kuro's Location</h3>
-          <p className="text-xs text-slate-300">{positions[0]}</p>
+          <h3 className="text-sm font-bold text-yellow-400 mb-1 font-title">Kuro's Location</h3>
+          <p className="text-xs text-slate-300 font-body">{positions[0]}</p>
         </div>
       </div>
 
@@ -512,7 +513,7 @@ const MapComponent = ({ weather }: MapProps) => {
       <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
         <DialogContent className="sm:max-w-[600px] bg-slate-800 text-slate-100">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-yellow-400 flex items-center gap-2">
+            <DialogTitle className="text-2xl font-bold text-yellow-400 flex items-center gap-2 font-title">
               {selectedLocation?.icon}
               {selectedLocation?.name}
             </DialogTitle>
@@ -524,25 +525,25 @@ const MapComponent = ({ weather }: MapProps) => {
               <TabsTrigger value="activities">Activities</TabsTrigger>
             </TabsList>
             <TabsContent value="info" className="mt-4">
-              <DialogDescription className="text-slate-300">
+              <DialogDescription className="text-slate-300 font-body">
                 {selectedLocation && getLocationDescription(selectedLocation.name)}
               </DialogDescription>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div className="bg-slate-700 p-3 rounded-lg">
-                  <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center">
+                  <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center font-title">
                     <Clock className="w-4 h-4 mr-2" />
                     Opening Hours
                   </h4>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-300 font-body">
                     {selectedLocation && getLocationHours(selectedLocation.name)}
                   </p>
                 </div>
                 <div className="bg-slate-700 p-3 rounded-lg">
-                  <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center">
+                  <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center font-title">
                     <Mail className="w-4 h-4 mr-2" />
                     Location Details
                   </h4>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-300 font-body">
                     {selectedLocation && getLocationDetails(selectedLocation.name)}
                   </p>
                 </div>
@@ -559,8 +560,8 @@ const MapComponent = ({ weather }: MapProps) => {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-200">{agent.name}</h4>
-                      <p className="text-xs text-slate-400">At {agent.location}</p>
+                      <h4 className="text-sm font-semibold text-slate-200 font-title">{agent.name}</h4>
+                      <p className="text-xs text-slate-400 font-body">At {agent.location}</p>
                     </div>
                     <Button
                       variant="secondary"
@@ -578,8 +579,8 @@ const MapComponent = ({ weather }: MapProps) => {
               <ScrollArea className="h-[300px] pr-4">
                 {selectedLocation && getLocationActivities(selectedLocation.name).map((activity, index) => (
                   <div key={index} className="mb-4 p-3 bg-slate-700 rounded-lg">
-                    <h4 className="text-sm font-semibold text-slate-200 mb-2">{activity.name}</h4>
-                    <p className="text-xs text-slate-300">{activity.description}</p>
+                    <h4 className="text-sm font-semibold text-slate-200 mb-2 font-title">{activity.name}</h4>
+                    <p className="text-xs text-slate-300 font-body">{activity.description}</p>
                   </div>
                 ))}
               </ScrollArea>
@@ -598,7 +599,7 @@ const MapComponent = ({ weather }: MapProps) => {
       <AIAgentDialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen} agent={selectedAgent} date={currentTime} />
       
       {/* Expandable Chat */}
-      <ExpandableChat />
+      <ExpandableChat currentTime={currentTime} />
     </div>
   )
 }

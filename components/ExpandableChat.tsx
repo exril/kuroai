@@ -47,7 +47,11 @@ const randomCharacters = Object.keys(characterProfiles).filter(
   (name) => name !== 'System' && name !== 'Kuro'
 )
 
-export default function ExpandableChat() {
+interface ExpandableChatProps {
+  currentTime: Date;
+}
+
+export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
   const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
   const time = useSelector((state: RootState) => state.agentActivity.time);
 
@@ -118,7 +122,7 @@ export default function ExpandableChat() {
           // Expanded chat
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-yellow-400/30">
-              <h3 className="text-sm font-bold text-yellow-400">World Chat Logs</h3>
+              <h3 className="text-sm font-bold text-yellow-400 font-title">World Chat Logs</h3>
               
               <Button
                 variant="ghost"
@@ -161,10 +165,10 @@ export default function ExpandableChat() {
                           : 'bg-slate-700 text-slate-100'
                       }`}
                       >
-                        <p className="font-bold text-xs mb-1">{msg.sender}</p>
-                        <p className="text-sm leading-snug">{msg.content}</p>
+                        <p className="font-bold text-xs mb-1 font-title">{msg.sender}</p>
+                        <p className="text-sm leading-snug font-body">{msg.content}</p>
                         {/* Timestamp inside bubble at bottom right */}
-                        <span className="absolute bottom-1 right-2 text-[0.7rem] text-slate-400">
+                        <span className="absolute bottom-1 right-2 text-[0.7rem] text-slate-400 font-body">
                           {msg.timestamp}
                         </span>
                       </div>
@@ -192,15 +196,15 @@ export default function ExpandableChat() {
 
             <div className="ml-4 flex flex-col flex-grow">
               <div className="flex justify-between">
-                <span className="text-xs font-bold text-yellow-400">
+                <span className="text-xs font-bold text-yellow-400 font-title">
                   {lastMsg ? lastMsg.sender : 'System'}
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-400 font-body">
                   {lastMsg ? lastMsg.timestamp : ''}
                 </span>
               </div>
               {/* Truncated preview text */}
-              <div className="text-sm text-slate-100 truncate max-w-[250px]">
+              <div className="text-sm text-slate-100 truncate max-w-[250px] font-body">
                 {lastMsg ? lastMsg.content : 'No messages yet.'}
               </div>
             </div>
