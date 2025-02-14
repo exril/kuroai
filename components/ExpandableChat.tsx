@@ -79,14 +79,16 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
 
   useEffect(() => {
     let newMessages = [...messages]
-    let index = curIndex;
+    let index = curIndex
 
     while ( index < queue.length && currentTime > queue[index].timestamp  ) {
-        newMessages.push(queue[index ++]);
+        newMessages.push(queue[index ++])
     }
 
-    setCurIndex(index)
-    setMessages(newMessages)
+    if ( index !== curIndex ) {
+      setCurIndex(index)
+      setMessages(newMessages)
+    }
   }, [queue, currentTime])
 
   // Simulate incoming messages
