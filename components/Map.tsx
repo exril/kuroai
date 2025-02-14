@@ -157,6 +157,8 @@ const MapComponent = ({ weather }: MapProps) => {
   // Agents activities and Conversations from Redux
   const agents = useSelector((state: RootState) => state.agentActivity.agents as Agent[]);
   const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
+  const time = useSelector((state: RootState) => state.agentActivity.time)
+  const date = useSelector((state: RootState) => state.agentActivity.date)
 
   // Panning and zoom state
   const containerRef = useRef<HTMLDivElement>(null)
@@ -169,7 +171,7 @@ const MapComponent = ({ weather }: MapProps) => {
   const [currentEvent, setCurrentEvent] = useState("Kuro is sleeping")
 
   // Initialize Kuro at his house
-  const [positions, setPositions] = useState<Array<string>>(aiAgents.filter((agent) => agent.isMainAgent).map((agent) => agent.location))
+  const [positions, setPositions] = useState<Array<string>>(aiAgents.map((agent) => agent.location))
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false)
   const [isCharacterStatsDialogOpen, setIsCharacterStatsDialogOpen] = useState(false)
@@ -248,13 +250,11 @@ const MapComponent = ({ weather }: MapProps) => {
     
     let newPosition: Array<string> = []
     aiAgents.forEach((agent) => {
-      if ( agent.isMainAgent ) {
-        const agentActivity = agents.find((item) => item.name == agent.name)
-        const newLocation = locations.find((location) => location.name == agentActivity?.location[0])
+      const agentActivity = agents.find((item) => item.name == agent.name)
+      const newLocation = locations.find((location) => location.name == agentActivity?.location[0])
 
-        if ( newLocation ) newPosition.push(newLocation.name);
-        else newPosition.push(positions[agent.id - 1])
-      }
+      if ( newLocation ) newPosition.push(newLocation.name);
+      else newPosition.push(positions[agent.id - 1])
     })
 
     setPositions(newPosition);
@@ -266,11 +266,11 @@ const MapComponent = ({ weather }: MapProps) => {
         if ( conversation[0].length < 2 ) return ;
         if ( conversation[0][0].name == 'Kuro' ) {
           const aiAgent = getAgentWithName(conversation[0][1].name);
-          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: currentTime.toLocaleString() }))
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${date} ${time}` }))
         }
         if ( conversation[0][1].name == 'Kuro' ) {
           const aiAgent = getAgentWithName(conversation[0][0].name);
-          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: currentTime.toLocaleString() }))
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${date} ${time}` }))
         }
       })
     }
@@ -323,7 +323,7 @@ const MapComponent = ({ weather }: MapProps) => {
     }
   }
   const getAgentsAtLocation = (locationName: string) => {
-    return aiAgents.filter(agent => agent.location === locationName && !agent.isMainAgent)
+    return aiAgents.filter(agent => positions[agent.id - 1] === locationName && !agent.isMainAgent)
   }
   const getAgentWithName = (name: string) => {
     return aiAgents.find(agent => agent.name === name)
@@ -564,7 +564,7 @@ const MapComponent = ({ weather }: MapProps) => {
                     </Avatar>
                     <div>
                       <h4 className="text-sm font-semibold text-slate-200 font-title">{agent.name}</h4>
-                      <p className="text-xs text-slate-400 font-body">At {agent.location}</p>
+                      <p className="text-xs text-slate-400 font-body">From {agent.location}</p>
                     </div>
                     <Button
                       variant="secondary"
