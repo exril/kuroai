@@ -425,7 +425,7 @@ const MapComponent = ({ weather }: MapProps) => {
                 </h4>
                 {getAgentsAtLocation(location.name).map((agent) => (
                   <Button
-                    key={agent.id}
+                    key={'locationAgent' + agent.id}
                     variant="secondary"
                     size="sm"
                     className="w-full justify-start text-left mb-1 bg-yellow-500 text-slate-900 hover:bg-yellow-600"
@@ -598,7 +598,7 @@ const MapComponent = ({ weather }: MapProps) => {
       <AIAgentDialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen} agent={selectedAgent} date={currentTime} />
       
       {/* Expandable Chat */}
-      <ExpandableChat currentTime={currentTime} />
+      <ExpandableChat />
     </div>
   )
 }

@@ -47,7 +47,7 @@ const randomCharacters = Object.keys(characterProfiles).filter(
   (name) => name !== 'System' && name !== 'Kuro'
 )
 
-export default function ExpandableChat(currentTime) {
+export default function ExpandableChat() {
   const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
   const time = useSelector((state: RootState) => state.agentActivity.time);
 
@@ -66,7 +66,7 @@ export default function ExpandableChat(currentTime) {
         content,
         timestamp: time,
       },
-    ])
+    ].slice(-10))
   }
 
   // Simulate incoming messages
@@ -77,15 +77,13 @@ export default function ExpandableChat(currentTime) {
   // Add messages
   useEffect(() => {
     if ( conversations && Object.values(conversations).length > 0 ) {
-      const conversation = Object.values(conversations)[0];
-
-      for(let i = 0; i < conversation[0].length; ++ i){
-        const value = conversation[0][i]
-        if ( value.text ) {
-          addMessage(value.name, value.text, time)
-          break;
-        }
-      }
+      Object.values(conversations).forEach((conversation) => {
+        conversation.forEach((chats: Array<{name: string, text: string, reaction: string}>) => {
+          chats.forEach((chat) => {
+            if ( chat.text ) addMessage(chat.name, chat.text, time)
+          })
+        })
+      });
     }
   }, [conversations])
 

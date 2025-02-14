@@ -21,7 +21,7 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }) => {
     if ( agent ) {
       setStats({
         activity: agent.activity.split('>')[0],
-        mood:  capitalizeFirstLetter(agent.emotion),
+        mood:  agent.emotion,
         energy: agent.basic_needs.energy * 10,
         thoughts: agent.thoughts
       })
@@ -57,7 +57,7 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }) => {
                 <PlayCircle className="w-5 h-5 text-blue-400" />
                 <span className="text-sm font-medium text-slate-200">Activity</span>
               </div>
-              <p className="text-sm text-slate-300">{stats.activity}</p>
+              <p className="text-sm text-slate-300">{capitalizeFirstLetter(stats.activity)}</p>
             </div>
             <div className="bg-slate-700/50 p-3 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
@@ -65,7 +65,7 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }) => {
                 <span className="text-sm font-medium text-slate-200">Mood</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-300">{stats.mood}</span>
+                <span className="text-sm text-slate-300">{capitalizeFirstLetter(stats.mood)}</span>
                 <span className="text-2xl" role="img" aria-label={`Mood: ${stats.mood}`}>
                   {getMoodEmoji(stats.mood)}
                 </span>
