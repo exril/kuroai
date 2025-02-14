@@ -20,13 +20,14 @@ import {
 } from 'lucide-react'
 import CharacterStatsDialog from './CharacterStatsDialog'
 import AIAgentDialog from './AIAgentDialog'
-import moment from 'moment';
+import moment, { now } from 'moment';
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "@/redux/store";
 import { Agent } from "@/redux/types/agent";
 import { fetchAgentActivity } from "@/redux/slices/activitySlice";
 import { increaseInteract } from "@/redux/slices/interactionSlice";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { capitalizeFirstLetter } from '@/lib/utils'
 
 
 // Define MovingClouds so they animate over the map.
@@ -157,6 +158,8 @@ const MapComponent = ({ weather }: MapProps) => {
   // Agents activities and Conversations from Redux
   const agents = useSelector((state: RootState) => state.agentActivity.agents as Agent[]);
   const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
+  const time = useSelector((state: RootState) => state.agentActivity.time)
+  const date = useSelector((state: RootState) => state.agentActivity.date)
 
   // Panning and zoom state
   const containerRef = useRef<HTMLDivElement>(null)
@@ -169,14 +172,14 @@ const MapComponent = ({ weather }: MapProps) => {
   const [currentEvent, setCurrentEvent] = useState("Kuro is sleeping")
 
   // Initialize Kuro at his house
-  const [positions, setPositions] = useState<Array<string>>(aiAgents.filter((agent) => agent.isMainAgent).map((agent) => agent.location))
+  const [positions, setPositions] = useState<Array<string>>(aiAgents.map((agent) => agent.location))
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false)
   const [isCharacterStatsDialogOpen, setIsCharacterStatsDialogOpen] = useState(false)
   const [selectedCharacterName, setSelectedCharacterName] = useState('Kuro')
   const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string, color: string, isMainAgent: boolean } | null>(null)
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, /*Math.floor(Math.random() * 7) + */1, 6, 0, 0))
+  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, 1, new Date().getHours(), new Date().getMinutes()))
   const [isNight, setIsNight] = useState(false)
 
   useEffect(() => {
@@ -221,11 +224,11 @@ const MapComponent = ({ weather }: MapProps) => {
   useEffect(() => {
     const timeInterval = setInterval(() => {
       setCurrentTime(prevTime => {
-        const newTime = new Date(prevTime.getTime() + 5 * 60000)
+        const newTime = new Date(prevTime.getTime() + 60000)
         setIsNight(newTime.getHours() >= 20 || newTime.getHours() < 6)
         return newTime
       })
-    }, 1000)
+    }, 200)
     return () => clearInterval(timeInterval)
   }, [])
 
@@ -234,27 +237,25 @@ const MapComponent = ({ weather }: MapProps) => {
     if ( moment(currentTime).format('YYYY-MM-DD') !== moment(currentTime).format('YYYY-MM-DD') )
       handlePlanDate(currentTime)
 
-    if ( currentTime.getMinutes() % 15 == 0 )
+    if ( currentTime.getMinutes() % 30 == 0 && currentTime.getHours() >= 6 )
         handleFetchActivity(currentTime)
   }, [currentTime])
 
   useEffect(() => {
     if (!agents) return;
-    
-    const kuroAcitivity = agents.find((agent) => agent.name === 'Kuro');
-    if (kuroAcitivity) {
-      setCurrentEvent(`Kuro ${kuroAcitivity.activity.split('>')[0]}`)
+    const kuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
+
+    if ( kuroAcitivity ) {
+      setCurrentEvent(`${capitalizeFirstLetter(kuroAcitivity.activity.split('>')[0])}`)
     }
     
     let newPosition: Array<string> = []
     aiAgents.forEach((agent) => {
-      if ( agent.isMainAgent ) {
-        const agentActivity = agents.find((item) => item.name == agent.name)
-        const newLocation = locations.find((location) => location.name == agentActivity?.location[0])
+      const agentActivity = agents.find((item) => item.name == agent.name)
+      const newLocation = locations.find((location) => location.name == agentActivity?.location[0])
 
-        if ( newLocation ) newPosition.push(newLocation.name);
-        else newPosition.push(positions[agent.id - 1])
-      }
+      if ( newLocation ) newPosition.push(newLocation.name);
+      else newPosition.push(positions[agent.id - 1])
     })
 
     setPositions(newPosition);
@@ -266,11 +267,11 @@ const MapComponent = ({ weather }: MapProps) => {
         if ( conversation[0].length < 2 ) return ;
         if ( conversation[0][0].name == 'Kuro' ) {
           const aiAgent = getAgentWithName(conversation[0][1].name);
-          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: currentTime.toLocaleString() }))
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${date} ${time}` }))
         }
         if ( conversation[0][1].name == 'Kuro' ) {
           const aiAgent = getAgentWithName(conversation[0][0].name);
-          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: currentTime.toLocaleString() }))
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${date} ${time}` }))
         }
       })
     }
@@ -323,7 +324,7 @@ const MapComponent = ({ weather }: MapProps) => {
     }
   }
   const getAgentsAtLocation = (locationName: string) => {
-    return aiAgents.filter(agent => agent.location === locationName && !agent.isMainAgent)
+    return aiAgents.filter(agent => positions[agent.id - 1] === locationName && !agent.isMainAgent)
   }
   const getAgentWithName = (name: string) => {
     return aiAgents.find(agent => agent.name === name)
@@ -428,7 +429,7 @@ const MapComponent = ({ weather }: MapProps) => {
                 </h4>
                 {getAgentsAtLocation(location.name).map((agent) => (
                   <Button
-                    key={agent.id}
+                    key={'locationAgent' + agent.id}
                     variant="secondary"
                     size="sm"
                     className="w-full justify-start text-left mb-1 bg-yellow-500 text-slate-900 hover:bg-yellow-600"
@@ -446,6 +447,7 @@ const MapComponent = ({ weather }: MapProps) => {
         {aiAgents.map((agent) => (
           agent.isMainAgent && (
             <div
+              key={"AI Agents" + agent.id}
               className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
               style={{ left: `${getLocation(positions[agent.id - 1])!.x + 2 * Math.pow(-1, agent.id + Math.floor(agent.id / 2))}%`, top: `${getLocation(positions[agent.id - 1])!.y + 2 * Math.pow(-1, agent.id)}%`, zIndex: 102 }}
             >
@@ -554,7 +556,7 @@ const MapComponent = ({ weather }: MapProps) => {
                     </Avatar>
                     <div>
                       <h4 className="text-sm font-semibold text-slate-200 font-title">{agent.name}</h4>
-                      <p className="text-xs text-slate-400 font-body">At {agent.location}</p>
+                      <p className="text-xs text-slate-400 font-body">From {agent.location}</p>
                     </div>
                     <Button
                       variant="secondary"

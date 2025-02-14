@@ -38,6 +38,7 @@ const AIAgentDialog = ({ open, onOpenChange, agent, date }: AIAgentDialogProps) 
   const [interactDate, setInteractDate] = useState<Date | null>(null)
 
   useEffect(() => {
+    if ( agents == undefined ) return ;
     const agentActivity = agents.find((agt) => agt.name == agent.name)
     const interact = agentInteracts[agent.id - 1]
 
@@ -81,7 +82,7 @@ const AIAgentDialog = ({ open, onOpenChange, agent, date }: AIAgentDialogProps) 
             </h3>
             <p className="text-sm text-slate-300 font-body">Total interactions: {interactCount}</p>
             <p className="text-sm text-slate-300 font-body">Last interaction: { interactDate ?
-                Math.floor((date.getTime() - interactDate!.getTime()) / (24 * 60 * 60000))
+                Math.floor((date.getTime() - interactDate!.getTime()) / (60 * 60000))
                 : ''
               } hours ago</p>
           </div>

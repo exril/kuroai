@@ -19,6 +19,7 @@ export default function AgentSidebar() {
   })
 
   useEffect(() => {
+    if ( agents === undefined ) return ;
     const Kuro = agents.find((agent) => agent.name == 'Kuro')
     if ( Kuro == undefined ) return ;
     

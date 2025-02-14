@@ -23,6 +23,7 @@ export default function AgentInterface() {
 
 
   useEffect(() => {
+    if ( agents === undefined ) return ;
     const agent = agents.find((agent) => agent.name == 'Kuro')
     if ( agent ) {
       const newThought = {
