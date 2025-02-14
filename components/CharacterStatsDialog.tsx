@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Agent } from "@/redux/types/agent"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
-import { Cat, Battery, Brain, PlayCircle, HeartPulse } from 'lucide-react'
+import { Cat, Battery, Brain, PlayCircle, HeartPulse, Heart } from 'lucide-react'
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { capitalizeFirstLetter } from '@/lib/utils'
@@ -19,10 +19,12 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
     activity: "Napping in the sun",
     mood: "Happy",
     energy: 60,
-    thoughts: "I wonder what adventure awaits me today!"
+    thoughts: "I wonder what adventure awaits me today!",
+    relationWithKuro: 0
   })
 
   useEffect(() => {
+    if ( agents === undefined ) return;
     const agent = agents.find((agent) => agent.name == name)
 
     if ( agent ) {
@@ -30,7 +32,8 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
         activity: agent.activity.split('>')[0],
         mood:  agent.emotion,
         energy: agent.basic_needs.energy * 10,
-        thoughts: agent.thoughts
+        thoughts: agent.thoughts,
+        relationWithKuro: agent.social_relationships['Kuro']?.closeness / 2 | 0
       })
     }
   }, [agents])
@@ -89,6 +92,16 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
             </div>
             <Progress value={stats.energy} className="h-2" />
           </div>
+          { name != "Kuro" && (
+            <div className="bg-slate-700/50 p-3 rounded-lg">
+              <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center font-title">
+                <Heart className="w-5 h-5 mr-2 text-red-400" />
+                Relationship with Kuro
+              </h3>
+              <Progress value={stats.relationWithKuro * 20} className="h-2 mb-2" />
+              <p className="text-sm text-slate-300 font-body">Level {stats.relationWithKuro} / 5</p>
+            </div>
+          )}
           <div className="bg-slate-700/50 p-3 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Brain className="w-5 h-5 text-purple-400" />

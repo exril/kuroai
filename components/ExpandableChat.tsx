@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import moment from 'moment'
 
 // Inline custom scrollbar styling
 const customScrollbarStyles = `
@@ -28,7 +29,7 @@ type Message = {
   id: string
   sender: string
   content: string
-  timestamp: string
+  timestamp: Date
 }
 
 const characterProfiles: Record<string, { pfp: string; color: string }> = {
@@ -52,17 +53,20 @@ interface ExpandableChatProps {
 }
 
 export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
-  const conversations = useSelector((state: RootState) => state.agentActivity.conversations);
-  const time = useSelector((state: RootState) => state.agentActivity.time);
+  const conversations = useSelector((state: RootState) => state.agentActivity.conversations)
+  const time = useSelector((state: RootState) => state.agentActivity.time)
+  const date = useSelector((state: RootState) => state.agentActivity.date)
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
+  const [queue, setQueue] = useState<Message[]>([])
+  const [curIndex, setCurIndex] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Helper: add a new message with a truly unique ID
-  const addMessage = (sender: string, content: string, time: string) => {
+  const addMessageToQueue = (sender: string, content: string, time: Date) => {
     const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
-    setMessages((prev) => [
+    setQueue((prev) => [
       ...prev,
       {
         id: uniqueId,
@@ -70,24 +74,38 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
         content,
         timestamp: time,
       },
-    ].slice(-10))
+    ])
   }
+
+  useEffect(() => {
+    let newMessages = [...messages]
+    let index = curIndex;
+
+    while ( index < queue.length && currentTime > queue[index].timestamp  ) {
+        newMessages.push(queue[index ++]);
+    }
+
+    setCurIndex(index)
+    setMessages(newMessages.slice(-10))
+  }, [queue, currentTime])
 
   // Simulate incoming messages
   useEffect(() => {
-    addMessage('System', "Welcome to Kuro's World Chat Logs!", "6:00")
+    addMessageToQueue('System', "Welcome to Kuro's World Chat Logs!", currentTime)
   }, [])
 
   // Add messages
   useEffect(() => {
     if ( conversations && Object.values(conversations).length > 0 ) {
-      Object.values(conversations).forEach((conversation) => {
-        conversation.forEach((chats: Array<{name: string, text: string, reaction: string}>) => {
-          chats.forEach((chat) => {
-            if ( chat.text ) addMessage(chat.name, chat.text, time)
-          })
+      const conversation = Object.values(conversations)[0]
+      
+      conversation.forEach((chats: Array<{name: string, text: string, reaction: string}>) => {
+        const length = chats.length
+        chats.forEach((chat, index) => {
+          const tDate = new Date(`${date} ${time}`)
+          if ( chat.text ) addMessageToQueue(chat.name, chat.text, new Date(tDate.getTime() + index * Math.floor(15 * 60000.0 / length)))
         })
-      });
+      })
     }
   }, [conversations])
 
@@ -169,7 +187,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
                         <p className="text-sm leading-snug font-body">{msg.content}</p>
                         {/* Timestamp inside bubble at bottom right */}
                         <span className="absolute bottom-1 right-2 text-[0.7rem] text-slate-400 font-body">
-                          {msg.timestamp}
+                          {moment(msg.timestamp).format("HH:mm")}
                         </span>
                       </div>
                     </div>
@@ -200,7 +218,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
                   {lastMsg ? lastMsg.sender : 'System'}
                 </span>
                 <span className="text-xs text-slate-400 font-body">
-                  {lastMsg ? lastMsg.timestamp : ''}
+                  {lastMsg ? moment(lastMsg.timestamp).format("HH:mm") : ''}
                 </span>
               </div>
               {/* Truncated preview text */}

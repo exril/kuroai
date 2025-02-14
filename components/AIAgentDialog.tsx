@@ -38,6 +38,7 @@ const AIAgentDialog = ({ open, onOpenChange, agent, date }: AIAgentDialogProps) 
   const [interactDate, setInteractDate] = useState<Date | null>(null)
 
   useEffect(() => {
+    if ( agents == undefined ) return ;
     const agentActivity = agents.find((agt) => agt.name == agent.name)
     const interact = agentInteracts[agent.id - 1]
 

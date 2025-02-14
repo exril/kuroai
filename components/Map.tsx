@@ -19,13 +19,14 @@ import {
 } from 'lucide-react'
 import CharacterStatsDialog from './CharacterStatsDialog'
 import AIAgentDialog from './AIAgentDialog'
-import moment from 'moment';
+import moment, { now } from 'moment';
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "@/redux/store";
 import { Agent } from "@/redux/types/agent";
 import { fetchAgentActivity } from "@/redux/slices/activitySlice";
 import { increaseInteract } from "@/redux/slices/interactionSlice";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { capitalizeFirstLetter } from '@/lib/utils'
 
 
 // Define MovingClouds so they animate over the map.
@@ -175,7 +176,7 @@ const MapComponent = ({ weather }: MapProps) => {
   const [selectedCharacterName, setSelectedCharacterName] = useState('Kuro')
   const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string, color: string, isMainAgent: boolean } | null>(null)
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, /*Math.floor(Math.random() * 7) + */1, 6, 0, 0))
+  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, 1, new Date().getHours(), new Date().getMinutes()))
   const [isNight, setIsNight] = useState(false)
 
   useEffect(() => {
@@ -220,11 +221,11 @@ const MapComponent = ({ weather }: MapProps) => {
   useEffect(() => {
     const timeInterval = setInterval(() => {
       setCurrentTime(prevTime => {
-        const newTime = new Date(prevTime.getTime() + 5 * 60000)
+        const newTime = new Date(prevTime.getTime() + 60000)
         setIsNight(newTime.getHours() >= 20 || newTime.getHours() < 6)
         return newTime
       })
-    }, 1000)
+    }, 200)
     return () => clearInterval(timeInterval)
   }, [])
 
@@ -238,10 +239,11 @@ const MapComponent = ({ weather }: MapProps) => {
   }, [currentTime])
 
   useEffect(() => {
+    if ( agents === undefined ) return ;
     const kuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
 
     if ( kuroAcitivity ) {
-      setCurrentEvent(`Kuro ${kuroAcitivity.activity.split('>')[0]}`)
+      setCurrentEvent(`${capitalizeFirstLetter(kuroAcitivity.activity.split('>')[0])}`)
     }
     
     let newPosition: Array<string> = []
@@ -444,6 +446,7 @@ const MapComponent = ({ weather }: MapProps) => {
         {aiAgents.map((agent) => (
           agent.isMainAgent && (
             <div
+              key={"AI Agents" + agent.id}
               className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 ease-in-out"
               style={{ left: `${getLocation(positions[agent.id - 1])!.x + 2 * Math.pow(-1, agent.id + Math.floor(agent.id / 2))}%`, top: `${getLocation(positions[agent.id - 1])!.y + 2 * Math.pow(-1, agent.id)}%`, zIndex: 102 }}
             >
