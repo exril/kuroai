@@ -13,7 +13,7 @@ const events = [
 export default function EventsList() {
   return (
     <div className="bg-slate-800/50 border-slate-700/50 backdrop-blur supports-[backdrop-filter]:bg-slate-800/75 shadow-lg rounded-lg p-4">
-      <h3 className="text-xl font-bold text-yellow-400 flex items-center gap-2 mb-4">
+      <h3 className="text-xl font-bold text-yellow-400 flex items-center gap-2 mb-4 font-title">
         <Calendar className="w-6 h-6" />
         Kuro's Events
       </h3>
@@ -21,14 +21,13 @@ export default function EventsList() {
         {events.map((event) => (
           <div key={event.id} className="mb-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600/50">
             <div className="flex justify-between items-start mb-2">
-              <span className="text-sm font-medium text-yellow-400">{event.time}</span>
-              <span className="text-sm font-semibold text-slate-200">{event.title}</span>
+              <span className="text-sm font-medium text-yellow-400 font-body">{event.time}</span>
+              <span className="text-sm font-semibold text-slate-200 font-title">{event.title}</span>
             </div>
-            <p className="text-sm text-slate-300">{event.description}</p>
+            <p className="text-sm text-slate-300 font-body">{event.description}</p>
           </div>
         ))}
       </ScrollArea>
     </div>
   )
 }
-
