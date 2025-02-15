@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import ExpandableChat from './ExpandableChat'
 import KuroStatus from '@/components/KuroStatus'
+import { Music2, Play, Pause, Volume2 } from 'lucide-react'
+import { Slider } from '@/components/ui/slider'
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
 } from "@/components/ui/tooltip"
@@ -27,7 +29,81 @@ import { Agent } from "@/redux/types/agent";
 import { fetchAgentActivity } from "@/redux/slices/activitySlice";
 import { increaseInteract } from "@/redux/slices/interactionSlice";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { motion, AnimatePresence } from 'framer-motion'
 
+
+// Custom scrollbar styling
+const customScrollbarStyles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #ffecec;
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #ff5a78;
+    border-radius: 3px;
+  }
+`
+
+// Animation variants for UI elements
+const containerVariants = {
+  hidden: { opacity: 0, scale: 0.98 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      duration: 0.3,
+      bounce: 0,
+      staggerChildren: 0.05
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.98,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut"
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -4 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { 
+      type: "spring",
+      duration: 0.3,
+      bounce: 0
+    }
+  },
+  exit: { 
+    opacity: 0,
+    x: 4,
+    transition: { 
+      duration: 0.2,
+      ease: "easeOut"
+    }
+  }
+}
+
+const popoverVariants = {
+  hidden: { opacity: 0, scale: 0.96, y: 4 },
+  show: { 
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      duration: 0.25,
+      bounce: 0
+    }
+  }
+}
 
 // Define MovingClouds so they animate over the map.
 // You can adjust the duration, delay, and z-index as needed.
@@ -149,6 +225,7 @@ const pannedLayers = [
 
 interface MapProps {
   weather: string
+  currentEvent?: string
 }
 
 const MapComponent = ({ weather }: MapProps) => {
@@ -178,6 +255,15 @@ const MapComponent = ({ weather }: MapProps) => {
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date(2025, 1, /*Math.floor(Math.random() * 7) + */1, 6, 0, 0))
   const [isNight, setIsNight] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [volume, setVolume] = useState([0.5])
+  const audioRef = useRef<HTMLAudioElement>(null)
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume[0]
+    }
+  }, [volume])
 
   useEffect(() => {
     const updateScale = () => {
@@ -413,31 +499,46 @@ const MapComponent = ({ weather }: MapProps) => {
                 {location.icon}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-0">
-              <div className="p-4 bg-slate-800 rounded-t-lg">
-                <h3 className="text-lg font-bold text-yellow-400 mb-2 font-title">{location.name}</h3>
-                <p className="text-sm text-slate-300 font-body">{getLocationDescription(location.name)}</p>
-                <Button className="w-full" onClick={() => handleLocationClick(location)}>
+            <PopoverContent asChild>
+              <motion.div
+                variants={popoverVariants}
+                initial="hidden"
+                animate="show"
+                className="w-64 p-0 bg-white border-2 border-black shadow-[4px_4px_0_0_black] rounded-2xl overflow-hidden bg-[url('/cloudspop.png')] bg-repeat bg-left-top bg-fixed"
+              >
+                <div className="p-4 bg-pink-100 border-b-2 border-black">
+                <h3 className="text-lg font-bold text-black mb-2 font-title flex items-center gap-2">
+                  {location.icon}
+                  {location.name}
+                </h3>
+                <p className="text-sm text-black font-body">{getLocationDescription(location.name)}</p>
+                <Button 
+                  className="w-full mt-3 bg-black text-white hover:bg-black/80"
+                  onClick={() => handleLocationClick(location)}
+                >
                   Visit Location
                 </Button>
               </div>
-              <div className="p-4 bg-slate-700 rounded-b-lg">
-                <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center font-title">
+              <div className="p-4 bg-yellow-100">
+                <h4 className="text-sm font-semibold text-black mb-3 flex items-center font-title">
                   <Users className="w-4 h-4 mr-2" />
                   Characters Here
                 </h4>
-                {getAgentsAtLocation(location.name).map((agent) => (
-                  <Button
-                    key={agent.id}
-                    variant="secondary"
-                    size="sm"
-                    className="w-full justify-start text-left mb-1 bg-yellow-500 text-slate-900 hover:bg-yellow-600"
-                    onClick={() => handleAgentClick(agent)}
-                  >
-                    {agent.name}
-                  </Button>
-                ))}
-              </div>
+                <div className="space-y-2">
+                  {getAgentsAtLocation(location.name).map((agent) => (
+                    <Button
+                      key={agent.id}
+                      variant="secondary"
+                      size="sm"
+                      className="w-full justify-start text-left border-2 border-black shadow-[2px_2px_0_0_black] bg-white text-black hover:bg-white/90"
+                      onClick={() => handleAgentClick(agent)}
+                    >
+                      {agent.name}
+                    </Button>
+                  ))}
+                </div>
+                </div>
+              </motion.div>
             </PopoverContent>
           </Popover>
         ))}
@@ -480,6 +581,7 @@ const MapComponent = ({ weather }: MapProps) => {
       {/* Fixed UI Overlays (2% padding from edges) */}
       <div className="absolute" style={{ top: '2%', right: '2%', zIndex: 1100 }}>
         <div className="bg-pink-100 p-3 rounded-2xl border-2 border-black shadow-[2px_2px_0_0_black] flex items-center space-x-4">
+          <audio ref={audioRef} src="/audio/track.mp3" loop />
           <div className="flex items-center space-x-2">
             {getWeatherIcon(weather)}
             <span className="text-sm font-bold text-black">{weather}</span>
@@ -495,6 +597,38 @@ const MapComponent = ({ weather }: MapProps) => {
               {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
+          <div className="h-8 w-[1px] bg-black/20"></div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => {
+                if (audioRef.current) {
+                  if (isPlaying) {
+                    audioRef.current.pause();
+                  } else {
+                    audioRef.current.play();
+                  }
+                  setIsPlaying(!isPlaying);
+                }
+              }}
+              className="w-8 h-8 rounded-full bg-violet-500 hover:bg-violet-600 flex items-center justify-center transition-colors border border-black"
+            >
+              {isPlaying ? 
+                <Pause className="w-4 h-4 text-white" /> : 
+                <Play className="w-4 h-4 text-white translate-x-[1px]" />
+              }
+            </button>
+            <div className="flex items-center space-x-2 min-w-[100px]">
+              <Volume2 className="w-4 h-4 text-violet-600" />
+              <Slider
+                defaultValue={[0.5]}
+                max={1}
+                step={0.1}
+                value={volume}
+                onValueChange={setVolume}
+                className="w-20"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -503,87 +637,130 @@ const MapComponent = ({ weather }: MapProps) => {
       </div>
 
       {/* Dialogs */}
-      <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-slate-800 text-slate-100">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-yellow-400 flex items-center gap-2 font-title">
+      <style jsx global>{customScrollbarStyles}</style>
+
+      <AnimatePresence>
+        {isLocationDialogOpen && (
+          <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
+            <DialogContent className="p-0 bg-transparent border-none shadow-none">
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="sm:max-w-[600px] bg-white border-2 border-black shadow-[4px_4px_0_0_black] rounded-2xl overflow-hidden bg-[url('/cloudspop.png')] bg-repeat bg-left-top bg-fixed"
+              >
+          <DialogHeader className="p-4 bg-pink-100 border-b-2 border-black">
+            <DialogTitle className="text-2xl font-bold text-black flex items-center gap-2 font-title">
               {selectedLocation?.icon}
               {selectedLocation?.name}
             </DialogTitle>
           </DialogHeader>
-          <Tabs defaultValue="info" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="info">Information</TabsTrigger>
-              <TabsTrigger value="characters">Characters</TabsTrigger>
-              <TabsTrigger value="activities">Activities</TabsTrigger>
+          <Tabs defaultValue="info" className="w-full p-4">
+            <TabsList className="grid w-full grid-cols-3 p-1 bg-black rounded-xl mb-4">
+              <TabsTrigger value="info" className="data-[state=active]:bg-pink-100 data-[state=active]:text-black text-white">Information</TabsTrigger>
+              <TabsTrigger value="characters" className="data-[state=active]:bg-yellow-100 data-[state=active]:text-black text-white">Characters</TabsTrigger>
+              <TabsTrigger value="activities" className="data-[state=active]:bg-green-100 data-[state=active]:text-black text-white">Activities</TabsTrigger>
             </TabsList>
-            <TabsContent value="info" className="mt-4">
-              <DialogDescription className="text-slate-300 font-body">
+            <TabsContent value="info" className="mt-0 h-[250px] relative overflow-hidden">
+              <motion.div 
+                variants={itemVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="absolute inset-0"
+              >
+                <DialogDescription className="text-black font-body bg-pink-50 p-4 rounded-2xl border-2 border-black shadow-[2px_2px_0_0_black] mb-4">
                 {selectedLocation && getLocationDescription(selectedLocation.name)}
               </DialogDescription>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="bg-slate-700 p-3 rounded-lg">
-                  <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center font-title">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-yellow-100 p-4 rounded-2xl border-2 border-black shadow-[2px_2px_0_0_black]">
+                  <h4 className="text-sm font-semibold text-black mb-2 flex items-center font-title">
                     <Clock className="w-4 h-4 mr-2" />
                     Opening Hours
                   </h4>
-                  <p className="text-sm text-slate-300 font-body">
+                  <p className="text-sm text-black font-body">
                     {selectedLocation && getLocationHours(selectedLocation.name)}
                   </p>
                 </div>
-                <div className="bg-slate-700 p-3 rounded-lg">
-                  <h4 className="text-sm font-semibold text-slate-200 mb-2 flex items-center font-title">
+                <div className="bg-green-100 p-4 rounded-2xl border-2 border-black shadow-[2px_2px_0_0_black]">
+                  <h4 className="text-sm font-semibold text-black mb-2 flex items-center font-title">
                     <Mail className="w-4 h-4 mr-2" />
                     Location Details
                   </h4>
-                  <p className="text-sm text-slate-300 font-body">
+                  <p className="text-sm text-black font-body">
                     {selectedLocation && getLocationDetails(selectedLocation.name)}
                   </p>
                 </div>
-              </div>
+                </div>
+              </motion.div>
             </TabsContent>
-            <TabsContent value="characters" className="mt-4">
-              <ScrollArea className="h-[300px] pr-4">
+            <TabsContent value="characters" className="mt-0 h-[250px] relative overflow-hidden">
+              <motion.div 
+                variants={itemVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="absolute inset-0"
+              >
+                <ScrollArea className="h-full pr-4 custom-scrollbar">
                 {selectedLocation && getAgentsAtLocation(selectedLocation.name).map((agent) => (
-                  <div key={agent.id} className="flex items-center space-x-4 mb-4 p-3 bg-slate-700 rounded-lg">
-                    <Avatar className="w-10 h-10">
+                  <div key={agent.id} className="flex items-center space-x-4 mb-4 p-4 bg-yellow-100 rounded-2xl border-2 border-black shadow-[2px_2px_0_0_black]">
+                    <Avatar className="w-10 h-10 border-2 border-black">
                       <AvatarImage src={agent.avatar} alt={agent.name} />
                       <AvatarFallback className={agent.color}>
                         {agent.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-200 font-title">{agent.name}</h4>
-                      <p className="text-xs text-slate-400 font-body">At {agent.location}</p>
+                      <h4 className="text-sm font-semibold text-black font-title">{agent.name}</h4>
+                      <p className="text-xs text-black/70 font-body">At {agent.location}</p>
                     </div>
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="ml-auto bg-yellow-500 text-slate-900 hover:bg-yellow-600"
+                      className="ml-auto border-2 border-black shadow-[2px_2px_0_0_black] bg-white text-black hover:bg-white/90"
                       onClick={() => handleAgentClick(agent)}
                     >
                       Interact
                     </Button>
                   </div>
                 ))}
-              </ScrollArea>
+                </ScrollArea>
+              </motion.div>
             </TabsContent>
-            <TabsContent value="activities" className="mt-4">
-              <ScrollArea className="h-[300px] pr-4">
+            <TabsContent value="activities" className="mt-0 h-[250px] relative overflow-hidden">
+              <motion.div 
+                variants={itemVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="absolute inset-0"
+              >
+                <ScrollArea className="h-full pr-4 custom-scrollbar">
                 {selectedLocation && getLocationActivities(selectedLocation.name).map((activity, index) => (
-                  <div key={index} className="mb-4 p-3 bg-slate-700 rounded-lg">
-                    <h4 className="text-sm font-semibold text-slate-200 mb-2 font-title">{activity.name}</h4>
-                    <p className="text-xs text-slate-300 font-body">{activity.description}</p>
+                  <div key={index} className="mb-4 p-4 bg-green-100 rounded-2xl border-2 border-black shadow-[2px_2px_0_0_black]">
+                    <h4 className="text-sm font-semibold text-black mb-2 font-title">{activity.name}</h4>
+                    <p className="text-xs text-black/70 font-body">{activity.description}</p>
                   </div>
                 ))}
-              </ScrollArea>
+                </ScrollArea>
+              </motion.div>
             </TabsContent>
           </Tabs>
-          <DialogFooter className="mt-6">
-            <Button onClick={() => setIsLocationDialogOpen(false)}>Close</Button>
+          <DialogFooter className="mt-4 p-4 bg-pink-50 border-t-2 border-black">
+            <Button 
+              onClick={() => setIsLocationDialogOpen(false)}
+              className="bg-black text-white hover:bg-black/80"
+            >
+              Close
+            </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              </motion.div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
 
       {/* Kuro Stats Dialog */}
       <CharacterStatsDialog open={isCharacterStatsDialogOpen} onOpenChange={setIsCharacterStatsDialogOpen} name={selectedCharacterName} />
