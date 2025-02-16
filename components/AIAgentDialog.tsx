@@ -143,7 +143,7 @@ const AIAgentDialog = ({ open, onOpenChange, agent, date }: AIAgentDialogProps) 
             </h3>
             <p className="text-sm text-black font-body">Total interactions: {interactCount}</p>
             <p className="text-sm text-black font-body">Last interaction: { interactDate ?
-                Math.floor((date.getTime() - interactDate!.getTime()) / (24 * 60 * 60000))
+                Math.floor((date.getTime() - interactDate!.getTime()) / (60 * 60000))
                 : ''
               } hours ago</p>
           </motion.div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Agent } from "@/redux/types/agent"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
-import { Cat, Battery, Brain, PlayCircle, HeartPulse } from 'lucide-react'
+import { Cat, Battery, Brain, PlayCircle, HeartPulse, Heart } from 'lucide-react'
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 import { capitalizeFirstLetter } from '@/lib/utils'
@@ -48,20 +48,23 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
     activity: "Napping in the sun",
     mood: "Happy",
     energy: 60,
-    thoughts: "I wonder what adventure awaits me today!"
+    thoughts: "I wonder what adventure awaits me today!",
+    relationWithKuro: 0
   })
 
   useEffect(() => {
     if (!agents) return;
-    
-    const agent = agents.find((agent) => agent.name === name);
-    if (agent) {
+
+    const agent = agents.find((agent) => agent.name == name)
+
+    if ( agent ) {
       setStats({
         activity: agent.activity.split('>')[0],
-        mood: capitalizeFirstLetter(agent.emotion),
+        mood:  agent.emotion,
         energy: agent.basic_needs.energy * 10,
-        thoughts: agent.thoughts
-      });
+        thoughts: agent.thoughts,
+        relationWithKuro: agent.social_relationships['Kuro']?.closeness / 2 | 0
+      })
     }
   }, [agents, name]);
 
@@ -115,7 +118,7 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
                 <PlayCircle className="w-5 h-5 text-blue-500" />
                 <span className="text-sm font-medium text-black font-body">Activity</span>
               </div>
-              <p className="text-sm text-black font-body">{stats.activity}</p>
+              <p className="text-sm text-black font-body">{capitalizeFirstLetter(stats.activity)}</p>
             </motion.div>
 
             <motion.div 
@@ -128,7 +131,7 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
                 <span className="text-sm font-medium text-black font-body">Mood</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-black font-body">{stats.mood}</span>
+                <span className="text-sm text-slate-300 font-body">{capitalizeFirstLetter(stats.mood)}</span>
                 <span className="text-2xl" role="img" aria-label={`Mood: ${stats.mood}`}>
                   {getMoodEmoji(stats.mood)}
                 </span>
@@ -150,6 +153,16 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
             </div>
             <Progress value={stats.energy} className="h-2 bg-white border border-black" />
           </motion.div>
+          { name != "Kuro" && (
+            <div className="bg-slate-700/50 p-3 rounded-lg">
+              <h3 className="text-lg font-medium text-slate-200 mb-2 flex items-center font-title">
+                <Heart className="w-5 h-5 mr-2 text-red-400" />
+                Relationship with Kuro
+              </h3>
+              <Progress value={stats.relationWithKuro * 20} className="h-2 mb-2" />
+              <p className="text-sm text-slate-300 font-body">Level {stats.relationWithKuro} / 5</p>
+            </div>
+          )}
 
           <motion.div 
             variants={itemVariants}
