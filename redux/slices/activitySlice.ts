@@ -8,7 +8,7 @@ export const fetchAgentActivity = createAsyncThunk("data/fetchAgentActivity", as
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ 
-      date: moment(new Date(2025, 1, 1/*(date.getDate() - 1) % 7 + 1*/)).format('YYYY-MM-DD'),
+      date: moment(new Date(2025, 1, (date.getDate() - 1) % 6 + 2)).format('YYYY-MM-DD'),
       time: moment(date).format("HH:mm")
     }),
   })

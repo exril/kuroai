@@ -16,13 +16,13 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
-  Cat, Cloud, Sun, CloudRain, CloudSun, CloudDrizzle, Users, Clock,
+  Cloud, Sun, CloudRain, CloudSun, CloudDrizzle, Users, Clock,
   Coffee, TreesIcon as Tree, Building2, Mail, Home, Newspaper, ShoppingCart, Shirt,
-  Moon, Sunrise, Dog, Bird
+  Moon, Sunrise
 } from 'lucide-react'
 import CharacterStatsDialog from './CharacterStatsDialog'
 import AIAgentDialog from './AIAgentDialog'
-import moment, { now } from 'moment';
+import moment from 'moment';
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "@/redux/store";
 import { Agent } from "@/redux/types/agent";
@@ -246,7 +246,6 @@ const MapComponent = ({ weather }: MapProps) => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   // Hover state (set via buttons only)
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null)
-  const [currentEvent, setCurrentEvent] = useState("Kuro is sleeping")
 
   // Initialize Kuro at his house
   const [positions, setPositions] = useState<Array<string>>(aiAgents.map((agent) => agent.location))
@@ -256,7 +255,7 @@ const MapComponent = ({ weather }: MapProps) => {
   const [selectedCharacterName, setSelectedCharacterName] = useState('Kuro')
   const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string, color: string, isMainAgent: boolean } | null>(null)
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, 1, new Date().getHours(), new Date().getMinutes()))
+  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, Math.floor(Math.random() * 6 + 1), new Date().getHours(), new Date().getMinutes()) )
   const [isNight, setIsNight] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState([0.5])
@@ -330,10 +329,6 @@ const MapComponent = ({ weather }: MapProps) => {
   useEffect(() => {
     if (!agents) return;
     const kuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
-
-    if ( kuroAcitivity ) {
-      setCurrentEvent(`${capitalizeFirstLetter(kuroAcitivity.activity.split('>')[0])}`)
-    }
     
     let newPosition: Array<string> = []
     aiAgents.forEach((agent) => {

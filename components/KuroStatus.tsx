@@ -2,17 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { Agent } from "@/redux/types/agent"
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Battery, Brain, PlayCircle, HeartPulse, Calendar } from 'lucide-react'
 import { GradientButton } from '@/components/ui/gradient-button'
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { capitalizeFirstLetter } from '@/lib/utils'
 
-const events = [
-  { id: 1, title: "Morning Stroll", location: "Park", description: "Kuro enjoys a peaceful walk." },
-  { id: 2, title: "Butterfly Chase", location: "Garden", description: "Kuro chases fluttering butterflies." },
-  { id: 3, title: "Nap Time", location: "Sunny Spot", description: "A quick snooze in a warm nook." },
-  { id: 4, title: "Bird Watching", location: "Backyard", description: "Observing birds with keen eyes." },
-  { id: 5, title: "Exploring", location: "Neighborhood", description: "Meeting new friends around." },
-]
+interface Event {
+  location: string,
+  description: string
+}
 
 // Parent container for stagger (open & close)
 const containerVariants = {
@@ -50,6 +51,7 @@ const hoverPop = {
 }
 
 export default function KuroWorld() {
+  const agents = useSelector((state: RootState) => state.agentActivity.agents as Agent[])
   const [stats, setStats] = useState({
     activity: "Napping in the sun",
     mood: "Happy",
@@ -57,35 +59,32 @@ export default function KuroWorld() {
     thoughts: "What adventure awaits today?",
   })
 
-  const [currentEvent, setCurrentEvent] = useState(events[0])
-  const [pastEvents, setPastEvents] = useState<typeof events>([])
+  const [currentEvent, setCurrentEvent] = useState<Event | undefined>()
+  const [pastEvents, setPastEvents] = useState<Array<Event>>([])
   const [isCollapsed, setIsCollapsed] = useState(true)
 
   useEffect(() => {
-    const statsInterval = setInterval(() => {
-      setStats((prev) => ({
-        ...prev,
-        mood: getRandomMood(),
-        energy: Math.min(100, Math.max(0, prev.energy + Math.floor(Math.random() * 20) - 5)),
-      }))
-    }, 10000)
+    if (!agents) return;
 
-    const eventInterval = setInterval(() => {
-      const newEvent = events[Math.floor(Math.random() * events.length)]
-      setPastEvents((prev) => [currentEvent, ...prev].slice(0, 3))
+    const agent = agents.find((agent) => agent.name == 'Kuro')
+
+    if ( agent ) {
+      const newEvent = {
+        location: agent.location[0],
+        description: agent.activity.split('>')[0]
+      }
+
+      setStats({
+        activity: agent.activity.split('>')[0],
+        mood:  agent.emotion,
+        energy: agent.basic_needs.energy * 10,
+        thoughts: agent.thoughts
+      })
+
       setCurrentEvent(newEvent)
-    }, 30000)
-
-    return () => {
-      clearInterval(statsInterval)
-      clearInterval(eventInterval)
+      setPastEvents((prev) => [newEvent, ...prev].slice(0, 3))
     }
-  }, [currentEvent])
-
-  const getRandomMood = () => {
-    const moods = ["Ecstatic", "Happy", "Content", "Curious", "Playful", "Sleepy", "Grumpy"]
-    return moods[Math.floor(Math.random() * moods.length)]
-  }
+  }, [agents, name]);
 
   const getMoodEmoji = (mood: string) => {
     switch (mood) {
@@ -172,13 +171,13 @@ export default function KuroWorld() {
                     variants={itemVariants}
                     {...hoverPop}
                   >
-                    <h2 className="text-lg font-title font-bold text-black mb-1">
+                    {/* <h2 className="text-lg font-title font-bold text-black mb-1">
                       {currentEvent.title}
-                    </h2>
-                    <p className="text-sm text-black">{currentEvent.description}</p>
+                    </h2> */}
+                    <p className="text-sm text-black">{capitalizeFirstLetter(currentEvent?.description || "")}</p>
                     <div className="flex items-center gap-1 text-sm text-gray-700 mt-1">
                       <MapPin className="w-4 h-4" />
-                      <span>{currentEvent.location}</span>
+                      <span>{currentEvent?.location}</span>
                     </div>
                   </motion.div>
 
@@ -194,7 +193,7 @@ export default function KuroWorld() {
                         <PlayCircle className="w-5 h-5 text-purple-600" />
                         <h3 className="text-sm font-title font-bold text-black">Activity</h3>
                       </div>
-                      <p className="text-sm text-black">{stats.activity}</p>
+                      <p className="text-sm text-black">{capitalizeFirstLetter(stats.activity)}</p>
                     </motion.div>
                     {/* Mood */}
                     <motion.div
@@ -207,8 +206,8 @@ export default function KuroWorld() {
                         <h3 className="text-sm font-title font-bold text-black">Mood</h3>
                       </div>
                       <div className="flex items-center gap-1">
-                        <p className="text-sm text-black">{stats.mood}</p>
-                        <span className="text-lg" role="img" aria-label={`Mood: ${stats.mood}`}>
+                        <p className="text-sm text-black">{capitalizeFirstLetter(stats.mood)}</p>
+                        <span className="text-lg" role="img" aria-label={`Mood: ${capitalizeFirstLetter(stats.mood)}`}>
                           {getMoodEmoji(stats.mood)}
                         </span>
                       </div>
@@ -243,7 +242,7 @@ export default function KuroWorld() {
                       <Brain className="w-5 h-5 text-blue-600" />
                       <h3 className="text-sm font-title font-bold text-black">Thoughts</h3>
                     </div>
-                    <p className="text-sm text-black italic">"{stats.thoughts}"</p>
+                    <p className="text-sm text-black italic">"{capitalizeFirstLetter(stats.thoughts)}"</p>
                   </motion.div>
 
                   {/* Past Events */}
@@ -257,14 +256,14 @@ export default function KuroWorld() {
                       <h4 className="text-sm font-title font-bold text-black">Recent Adventures</h4>
                     </div>
                     <div className="max-h-[120px] overflow-y-auto overflow-x-hidden space-y-2 scrollable">
-                      {pastEvents.map(ev => (
+                      {pastEvents.map((ev, index) => (
                         <motion.div
-                          key={ev.id}
+                          key={'events' + index}
                           className="rounded-xl border-2 border-black bg-gray-200 p-2 transition-colors"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.97 }}
                         >
-                          <p className="text-sm font-bold text-black">{ev.title}</p>
+                          <p className="text-sm font-bold text-black">{capitalizeFirstLetter(ev.description)}</p>
                           <p className="text-xs text-black">{ev.location}</p>
                         </motion.div>
                       ))}

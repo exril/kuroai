@@ -80,10 +80,11 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
   }
 
   useEffect(() => {
+    const now = new Date(2025, 1, (currentTime.getDate() - 1) % 6 + 2, currentTime.getHours(), currentTime.getMinutes())
     let newMessages = [...messages]
     let index = curIndex
 
-    while ( index < queue.length && currentTime > queue[index].timestamp  ) {
+    while ( index < queue.length && now > queue[index].timestamp  ) {
         newMessages.push(queue[index ++])
     }
 
@@ -95,7 +96,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
 
   // Simulate incoming messages
   useEffect(() => {
-    addMessageToQueue('System', "Welcome to Kuro's World Chat Logs!", currentTime)
+    addMessageToQueue('System', "Welcome to Kuro's World Chat Logs!", new Date(2025, 1, (currentTime.getDate() - 1) % 6 + 2, currentTime.getHours(), currentTime.getMinutes()))
   }, [])
 
   // Simulate incoming messages from conversations
