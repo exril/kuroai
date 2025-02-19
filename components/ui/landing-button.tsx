@@ -17,7 +17,7 @@ export function LandingButton({
   return (
     <Link href={href}>
       <button 
-        className={`${styles.landingButton} ${className}`}
+        className={`${styles.landingButton} ${className} [font-family:DynaPuff]`}
         {...props}
       >
         <div className={styles.back} />

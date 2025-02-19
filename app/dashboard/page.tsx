@@ -21,7 +21,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-white relative">
       <div className="fixed inset-0 pointer-events-none">
         <Image
-          src="/mapLayers/clouds.png"
+          src="/cloudsblue.png"
           alt="Clouds"
           fill
           style={{ objectFit: 'cover' }}
