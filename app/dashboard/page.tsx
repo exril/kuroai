@@ -12,7 +12,9 @@ import { BasicNeedsChart } from '@/components/analytics/BasicNeedsChart'
 import { SocialChart } from '@/components/analytics/SocialChart'
 import { EmotionsChart } from '@/components/analytics/EmotionsChart'
 import { ActivitiesChart } from '@/components/analytics/ActivitiesChart'
+import { EventLog } from '@/components/analytics/EventLog'
 import { mockAnalytics, agentProfiles, AgentAnalytics } from '@/lib/mock-analytics'
+import { globalEvents, agentEvents } from '@/lib/mock-events'
 import { ArrowLeft } from 'lucide-react'
 import styles from '@/styles/dashboard.module.css'
 import backStyles from '@/styles/back-button.module.css'
@@ -23,7 +25,7 @@ export default function DashboardPage() {
   const [agentData, setAgentData] = useState<AgentAnalytics>()
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect( () => {
+  useEffect(() => {
     fetch("/api/analytics", {
       method: "POST",
       headers: {
@@ -45,8 +47,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const data = analytics[selectedAgent]
-
-    if ( data ) setAgentData(data)
+    if (data) setAgentData(data)
   }, [selectedAgent])
 
   return (
@@ -86,60 +87,79 @@ export default function DashboardPage() {
             <p className="text-slate-900 font-['DynaPuff'] text-lg">Fetching data...</p>
           </div>
         ) : (
-          <Tabs defaultValue="Kuro" className="w-full max-w-7xl mx-auto" onValueChange={setSelectedAgent}>
-            <TabsList className={`w-full justify-start mb-8 ${styles.slideIn}`}>
+          <>
+            <Tabs defaultValue="Kuro" className="w-full max-w-7xl mx-auto" onValueChange={setSelectedAgent}>
+              <TabsList className={`w-full justify-start mb-8 ${styles.slideIn}`}>
+                {Object.keys(mockAnalytics).map((agent) => (
+                  <TabsTrigger
+                    key={agent}
+                    value={agent}
+                    className={`px-8 py-3 data-[state=active]:bg-white flex items-center gap-2 ${agentProfiles[agent].color} bg-opacity-20 data-[state=active]:bg-opacity-100`}
+                  >
+                    <div className="relative w-6 h-6 rounded-full overflow-hidden">
+                      <Image
+                        src={agentProfiles[agent].pfp}
+                        alt={agent}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    {agent}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
               {Object.keys(mockAnalytics).map((agent) => (
-                <TabsTrigger
-                  key={agent}
-                  value={agent}
-                  className={`px-8 py-3 data-[state=active]:bg-white flex items-center gap-2 ${agentProfiles[agent].color} bg-opacity-20 data-[state=active]:bg-opacity-100`}
-                >
-                  <div className="relative w-6 h-6 rounded-full overflow-hidden">
-                    <Image
-                      src={agentProfiles[agent].pfp}
-                      alt={agent}
-                      fill
-                      className="object-cover"
-                    />
+                <TabsContent key={agent} value={agent} className="space-y-8">
+                  <div className={styles.chartGrid}>
+                    <div className={styles.chartContainer}>
+                      <BasicNeedsChart
+                        timestamps={agentData.basicNeeds.timestamps}
+                        energy={agentData.basicNeeds.energy}
+                        health={agentData.basicNeeds.health}
+                      />
+                    </div>
+                    <div className={styles.chartContainer}>
+                      <SocialChart
+                        relationships={agentData.socialRelationships}
+                      />
+                    </div>
+                    <div className={styles.chartContainer}>
+                      <EmotionsChart
+                        emotions={agentData.emotions}
+                      />
+                    </div>
+                    <div className={styles.chartContainer}>
+                      <ActivitiesChart
+                        timestamps={agentData.activities.timestamps}
+                        activities={agentData.activities.activities}
+                      />
+                    </div>
                   </div>
-                  {agent}
-                </TabsTrigger>
+                  
+                  {agentEvents[agent] && (
+                    <div className={styles.chartContainer}>
+                      <EventLog 
+                        events={agentEvents[agent]} 
+                        showAgentImages={false}
+                        title={`${agent}'s Recent Events`}
+                        maxHeight="300px"
+                      />
+                    </div>
+                  )}
+                </TabsContent>
               ))}
-            </TabsList>
+            </Tabs>
 
-            {Object.keys(mockAnalytics).map((agent) => (
-              <TabsContent key={agent} value={agent} className="space-y-8">
-                <div className={styles.chartGrid}>
-                  <div className={styles.chartContainer}>
-                    <BasicNeedsChart
-                      timestamps={agentData.basicNeeds.timestamps}
-                      energy={agentData.basicNeeds.energy}
-                      health={agentData.basicNeeds.health}
-                    />
-                  </div>
-                  <div className={styles.chartContainer}>
-                    <SocialChart
-                      relationships={agentData.socialRelationships}
-                    />
-                  </div>
-                  <div className={styles.chartContainer}>
-                    <EmotionsChart
-                      emotions={agentData.emotions}
-                    />
-                  </div>
-                  <div className={styles.chartContainer}>
-                    <ActivitiesChart
-                      timestamps={agentData.activities.timestamps}
-                      activities={agentData.activities.activities}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        ) }
-
-        
+            <div className="max-w-7xl mx-auto mt-8">
+              <EventLog 
+                events={globalEvents} 
+                title="Global Event Timeline"
+                maxHeight="300px"
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

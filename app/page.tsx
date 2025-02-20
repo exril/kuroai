@@ -33,8 +33,8 @@ export default function Home() {
         <Image
           src="/kurocat.png"
           alt="Kuro Cat"
-          width={400}
-          height={400}
+          width={250}
+          height={250}
           className="object-contain"
           priority
         />
