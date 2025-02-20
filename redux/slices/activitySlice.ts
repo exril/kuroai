@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import moment from 'moment';
+import { dateConvert } from "@/lib/utils";
 
 export const fetchAgentActivity = createAsyncThunk("data/fetchAgentActivity", async (date: Date) => {
   const response = await fetch("/api/activity", {
@@ -8,7 +9,7 @@ export const fetchAgentActivity = createAsyncThunk("data/fetchAgentActivity", as
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ 
-      date: moment(new Date(2025, 1, (date.getDate() - 1) % 6 + 2)).format('YYYY-MM-DD'),
+      date: moment(dateConvert(date)).format('YYYY-MM-DD'),
       time: moment(date).format("HH:mm")
     }),
   })

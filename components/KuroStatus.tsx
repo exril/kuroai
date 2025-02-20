@@ -74,11 +74,13 @@ export default function KuroWorld() {
         description: agent.activity.split('>')[0]
       }
 
-      setStats({
-        activity: agent.activity.split('>')[0],
-        mood:  agent.emotion,
-        energy: agent.basic_needs.energy * 10,
-        thoughts: agent.thoughts
+      setStats((prev) => {
+        return {
+          activity: agent.activity.split('>')[0],
+          mood:  agent.emotion,
+          energy: agent.basic_needs.energy * 10,
+          thoughts: agent.thoughts.includes('Kuro') ? prev.thoughts : agent.thoughts,
+        }
       })
 
       setCurrentEvent(newEvent)
