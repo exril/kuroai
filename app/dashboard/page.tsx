@@ -1,10 +1,7 @@
 'use client'
 
 import '@fontsource/dynapuff'
-import { squircle } from 'ldrs'
 import { useEffect, useState } from 'react'
-
-squircle.register()
 import Image from 'next/image'
 import Link from 'next/link'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -76,14 +73,7 @@ export default function DashboardPage() {
 
         { isLoading || agentData == undefined ? (
           <div className="h-[50vh] flex flex-col justify-center items-center gap-4">
-            <l-squircle
-              size="37"
-              stroke="5"
-              stroke-length="0.15"
-              bg-opacity="0.1"
-              speed="0.9"
-              color="black" 
-            ></l-squircle>
+            <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-slate-900 font-['DynaPuff'] text-lg">Fetching data...</p>
           </div>
         ) : (
