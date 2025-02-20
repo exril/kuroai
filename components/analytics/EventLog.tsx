@@ -1,13 +1,14 @@
 'use client'
 
 import { Event } from '@/lib/mock-events'
-import { agentProfiles } from '@/lib/mock-analytics'
+import { AgentActivity, agentProfiles } from '@/lib/mock-analytics'
 import Image from 'next/image'
 import { Activity, Award, Heart, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { timestampConvert } from '@/lib/utils'
 
 interface EventLogProps {
-  events: Event[]
+  events: AgentActivity[]
   showAgentImages?: boolean
   title?: string
   maxHeight?: string
@@ -19,28 +20,28 @@ export function EventLog({
   title = "Event Log",
   maxHeight = "400px"
 }: EventLogProps) {
-  const getEventIcon = (type: Event['type']) => {
-    switch (type) {
-      case 'activity':
-        return <Activity className="w-4 h-4 text-blue-500" />
-      case 'achievement':
-        return <Award className="w-4 h-4 text-yellow-500" />
-      case 'emotion':
-        return <Heart className="w-4 h-4 text-pink-500" />
-      case 'interaction':
-        return <Users className="w-4 h-4 text-purple-500" />
-    }
-  }
+  // const getEventIcon = (type: Event['type']) => {
+  //   switch (type) {
+  //     case 'activity':
+  //       return <Activity className="w-4 h-4 text-blue-500" />
+  //     case 'achievement':
+  //       return <Award className="w-4 h-4 text-yellow-500" />
+  //     case 'emotion':
+  //       return <Heart className="w-4 h-4 text-pink-500" />
+  //     case 'interaction':
+  //       return <Users className="w-4 h-4 text-purple-500" />
+  //   }
+  // }
 
-  const getEventColor = (type: Event['type']) => {
+  const getEventColor = (type: number) => {
     switch (type) {
-      case 'activity':
+      case 0:
         return 'bg-blue-50 border-blue-200'
-      case 'achievement':
+      case 1:
         return 'bg-yellow-50 border-yellow-200'
-      case 'emotion':
+      case 2:
         return 'bg-pink-50 border-pink-200'
-      case 'interaction':
+      case 3:
         return 'bg-purple-50 border-purple-200'
     }
   }
@@ -55,17 +56,17 @@ export function EventLog({
       <div className="space-y-4 overflow-y-auto pr-2" style={{ maxHeight }}>
         {sortedEvents.map((event, index) => (
           <div 
-            key={event.id}
-            className={`p-4 rounded-lg border ${getEventColor(event.type)} relative opacity-0 animate-fadeIn`}
+            key={index}
+            className={`p-4 rounded-lg border ${getEventColor(Math.floor(Math.random() * 4))} relative opacity-0 animate-fadeIn`}
             style={{ 
               animationDelay: `${index * 50}ms`,
-              animationFillMode: 'forwards'
+              animationFillMode: 'forwards',
             }}
           >
             <div className="flex items-start gap-3">
-              <div className="mt-1">
+              {/* <div className="mt-1">
                 {getEventIcon(event.type)}
-              </div>
+              </div> */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-slate-900 font-medium">
                   {event.description}
@@ -93,19 +94,19 @@ export function EventLog({
                     </div>
                   ))}
                   <span className="text-xs text-slate-400">
-                    {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
+                    {event.timestamp ? formatDistanceToNow(new Date(timestampConvert(event.timestamp)), { addSuffix: true }) : ""}
                   </span>
                 </div>
               </div>
-              {event.impact && (
+              {event.intensity && (
                 <div 
                   className="text-xs font-semibold px-2 py-1 rounded-full"
                   style={{
-                    backgroundColor: `rgba(${event.impact > 80 ? '34, 197, 94' : event.impact > 60 ? '234, 179, 8' : '239, 68, 68'}, 0.1)`,
-                    color: event.impact > 80 ? 'rgb(21, 128, 61)' : event.impact > 60 ? 'rgb(161, 98, 7)' : 'rgb(185, 28, 28)'
+                    backgroundColor: `rgba(${event.intensity > 80 ? '34, 197, 94' : event.intensity > 60 ? '234, 179, 8' : '239, 68, 68'}, 0.1)`,
+                    color: event.intensity > 80 ? 'rgb(21, 128, 61)' : event.intensity > 60 ? 'rgb(161, 98, 7)' : 'rgb(185, 28, 28)'
                   }}
                 >
-                  Impact: {event.impact}
+                  Impact: {event.intensity}
                 </div>
               )}
             </div>

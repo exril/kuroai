@@ -135,7 +135,7 @@ export default function DashboardPage() {
                   {agentEvents[agent] && (
                     <div className={styles.chartContainer}>
                       <EventLog 
-                        events={agentEvents[agent]} 
+                        events={agentData.activities.activities} 
                         showAgentImages={false}
                         title={`${agent}'s Recent Events`}
                         maxHeight="300px"
@@ -146,13 +146,13 @@ export default function DashboardPage() {
               ))}
             </Tabs>
 
-            <div className="max-w-7xl mx-auto mt-8">
+            {/* <div className="max-w-7xl mx-auto mt-8">
               <EventLog 
                 events={globalEvents} 
                 title="Global Event Timeline"
                 maxHeight="300px"
               />
-            </div>
+            </div> */}
           </>
         )}
       </div>

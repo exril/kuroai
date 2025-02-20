@@ -1,6 +1,10 @@
 export interface AgentActivity {
   category: string,
-  intensity: number
+  intensity: number,
+  timestamp: string,
+  location: string,
+  description: string,
+  agents: string[]
 }
 export interface AgentAnalytics {
   basicNeeds: {
