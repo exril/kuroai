@@ -11,6 +11,7 @@ import {
   Legend
 } from 'chart.js'
 import { AgentActivity } from '@/lib/mock-analytics'
+import { timestampConvert } from '@/lib/utils'
 
 ChartJS.register(
   CategoryScale,
@@ -100,7 +101,7 @@ export function ActivitiesChart({ timestamps, activities }: ActivitiesChartProps
         ticks: {
           color: '#1e293b',
           callback: (value: any) => {
-            const date = new Date(timestamps[value])
+            const date = new Date(timestampConvert(timestamps[value]))
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
           }
         }
@@ -110,7 +111,7 @@ export function ActivitiesChart({ timestamps, activities }: ActivitiesChartProps
   }
 
   const data = {
-    labels: timestamps,
+    labels: timestamps.map((time) => timestampConvert(time)),
     datasets: [{
       data: activities.map((i) => i.intensity),
       backgroundColor: activities.map(activity => activityColors[activity.category as keyof typeof activityColors] || 'rgba(156, 163, 175, 0.8)'),
