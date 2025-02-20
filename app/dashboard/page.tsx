@@ -12,6 +12,7 @@ import { mockAnalytics, agentProfiles, AgentAnalytics } from '@/lib/mock-analyti
 import { ArrowLeft } from 'lucide-react'
 import styles from '@/styles/dashboard.module.css'
 import backStyles from '@/styles/back-button.module.css'
+import moment from 'moment'
 
 export default function DashboardPage() {
   const [selectedAgent, setSelectedAgent] = useState('Kuro')
@@ -25,6 +26,10 @@ export default function DashboardPage() {
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        start_time: moment(new Date(new Date(2025, 1, 6, new Date().getHours(), new Date().getMinutes()).getTime() - 10 * 60 * 60000)).format("YYYY-MM-DD HH:mm"),
+        end_time: "2025-02-06 " + moment(new Date()).format("HH:mm")
+      })
     }).then(async (response) => {
       if (!response.ok) throw new Error("Failed to fetch time")
   
