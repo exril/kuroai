@@ -12,6 +12,7 @@ import {
   Legend,
   Filler
 } from 'chart.js'
+import { timestampConvert } from '@/lib/utils'
 
 ChartJS.register(
   CategoryScale,
@@ -71,7 +72,7 @@ export function BasicNeedsChart({ timestamps, energy, health }: BasicNeedsChartP
   }
 
   const data = {
-    labels: timestamps,
+    labels: timestamps.map((time) => timestampConvert(time)),
     datasets: [
       {
         label: 'Energy',

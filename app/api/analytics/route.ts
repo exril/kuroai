@@ -9,20 +9,23 @@ const apiUrl = process.env.BACKEND_URL;
 
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+    const { start_time, end_time } = body;
+
     const response = await fetch(apiUrl + 'analytics', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ 
-        start_time: moment(new Date(new Date(2025, 1, 6, new Date().getHours(), new Date().getMinutes()).getTime() - 10 * 60 * 60000)).format("YYYY-MM-DD HH:mm"),
-        end_time: "2025-02-06 " + moment(new Date()).format("HH:mm")
+        start_time: start_time,
+        end_time: end_time
       }),
     });
 
     const externalData = await response.json();
     console.log(externalData)
-    
+
     return NextResponse.json({ 
       success: externalData ? true : false,
       data: externalData
