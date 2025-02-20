@@ -255,7 +255,7 @@ const MapComponent = ({ weather }: MapProps) => {
   const [selectedCharacterName, setSelectedCharacterName] = useState('Kuro')
   const [selectedAgent, setSelectedAgent] = useState<{ id: number, name: string, location: string, avatar: string, color: string, isMainAgent: boolean } | null>(null)
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, Math.floor(Math.random() * 6 + 1), new Date().getHours(), new Date().getMinutes()) )
+  const [currentTime, setCurrentTime] = useState(new Date(2025, 1, Math.floor(Math.random() * 4 + 1), 6, 0) )
   const [isNight, setIsNight] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState([0.5])
@@ -318,7 +318,6 @@ const MapComponent = ({ weather }: MapProps) => {
   }, [])
 
   useEffect(() => {
-    // console.log('Updated Time:', moment(currentTime).format('YYYY-MM-DD HH:mm'));
     if ( moment(currentTime).format('YYYY-MM-DD') !== moment(currentTime).format('YYYY-MM-DD') )
       handlePlanDate(currentTime)
 
@@ -328,7 +327,6 @@ const MapComponent = ({ weather }: MapProps) => {
 
   useEffect(() => {
     if (!agents) return;
-    const kuroAcitivity = agents.find((agent) => agent.name == 'Kuro')
     
     let newPosition: Array<string> = []
     aiAgents.forEach((agent) => {
@@ -348,11 +346,11 @@ const MapComponent = ({ weather }: MapProps) => {
         if ( conversation[0].length < 2 ) return ;
         if ( conversation[0][0].name == 'Kuro' ) {
           const aiAgent = getAgentWithName(conversation[0][1].name);
-          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${date} ${time}` }))
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${moment(currentTime).format('YYYY-MM-DD')} ${time}` }))
         }
         if ( conversation[0][1].name == 'Kuro' ) {
           const aiAgent = getAgentWithName(conversation[0][0].name);
-          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${date} ${time}` }))
+          if ( aiAgent ) dispatch(increaseInteract({ index: aiAgent.id, date: `${moment(currentTime).format('YYYY-MM-DD')} ${time}` }))
         }
       })
     }

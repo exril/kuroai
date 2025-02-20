@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js'
+import { AgentActivity } from '@/lib/mock-analytics'
 
 ChartJS.register(
   CategoryScale,
@@ -22,7 +23,7 @@ ChartJS.register(
 
 interface ActivitiesChartProps {
   timestamps: string[]
-  activities: string[]
+  activities: AgentActivity[]
 }
 
 export function ActivitiesChart({ timestamps, activities }: ActivitiesChartProps) {
@@ -58,9 +59,6 @@ export function ActivitiesChart({ timestamps, activities }: ActivitiesChartProps
     Performing: 'rgba(255, 99, 132, 0.8)'
   }
 
-  // Generate random activity intensities between 60 and 100
-  const activityIntensities = activities.map(() => Math.floor(Math.random() * 41) + 60)
-
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -74,8 +72,8 @@ export function ActivitiesChart({ timestamps, activities }: ActivitiesChartProps
       tooltip: {
         callbacks: {
           label: (context: any) => {
-            const activity = activities[context.dataIndex]
-            const intensity = activityIntensities[context.dataIndex]
+            const activity = activities[context.dataIndex].category
+            const intensity = activities[context.dataIndex].intensity
             return [`Activity: ${activity}`, `Intensity: ${intensity}%`]
           }
         }
@@ -114,8 +112,8 @@ export function ActivitiesChart({ timestamps, activities }: ActivitiesChartProps
   const data = {
     labels: timestamps,
     datasets: [{
-      data: activityIntensities,
-      backgroundColor: activities.map(activity => activityColors[activity as keyof typeof activityColors] || 'rgba(156, 163, 175, 0.8)'),
+      data: activities.map((i) => i.intensity),
+      backgroundColor: activities.map(activity => activityColors[activity.category as keyof typeof activityColors] || 'rgba(156, 163, 175, 0.8)'),
       borderWidth: 0,
       borderRadius: 4
     }]
@@ -129,16 +127,16 @@ export function ActivitiesChart({ timestamps, activities }: ActivitiesChartProps
           <Bar options={options} data={data} />
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
-          {Array.from(new Set(activities)).map((activity) => (
+          {Array.from(new Set(activities)).map((activity, index) => (
             <div 
-              key={activity}
+              key={index}
               className="flex items-center gap-2 px-3 py-1 rounded-full text-sm"
               style={{ 
-                backgroundColor: activityColors[activity as keyof typeof activityColors] || 'rgba(156, 163, 175, 0.8)',
+                backgroundColor: activityColors[activity.category as keyof typeof activityColors] || 'rgba(156, 163, 175, 0.8)',
                 color: 'white'
               }}
             >
-              {activity}
+              {activity.category}
             </div>
           ))}
         </div>

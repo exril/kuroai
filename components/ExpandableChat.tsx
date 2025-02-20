@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
 import { GradientButton } from '@/components/ui/gradient-button'
 import moment from 'moment'
+import { dateConvert, shortenMessage } from '@/lib/utils'
 
 // Inline custom scrollbar styling
 const customScrollbarStyles = `
@@ -80,7 +81,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
   }
 
   useEffect(() => {
-    const now = new Date(2025, 1, (currentTime.getDate() - 1) % 6 + 2, currentTime.getHours(), currentTime.getMinutes())
+    const now = dateConvert(currentTime)
     let newMessages = [...messages]
     let index = curIndex
 
@@ -96,7 +97,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
 
   // Simulate incoming messages
   useEffect(() => {
-    addMessageToQueue('System', "Welcome to Kuro's World Chat Logs!", new Date(2025, 1, (currentTime.getDate() - 1) % 6 + 2, currentTime.getHours(), currentTime.getMinutes()))
+    addMessageToQueue('System', "Welcome to Kuro's World Chat Logs!", dateConvert(currentTime))
   }, [])
 
   // Simulate incoming messages from conversations
@@ -108,7 +109,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
         const length = chats.length
         chats.forEach((chat, index) => {
           const tDate = new Date(`${date} ${time}`)
-          if ( chat.text ) addMessageToQueue(chat.name, chat.text, new Date(tDate.getTime() + index * Math.floor(30 * 60000.0 / length)))
+          if ( index < 4 && chat.text ) addMessageToQueue(chat.name, shortenMessage(chat.text), new Date(tDate.getTime() + index * Math.floor(30 * 60000.0 / length)))
         })
       })
     }
@@ -162,7 +163,7 @@ export default function ExpandableChat({ currentTime }: ExpandableChatProps) {
                     {messages.map((msg) => (
                       <motion.div
                         key={msg.id}
-                        className={`flex flex-col ${msg.sender === 'Kuro' ? 'items-end' : 'items-start'}`}
+                        className={`flex flex-col ${msg.sender === 'Kuro' ? 'items-start' : 'items-start'}`}
                         variants={messageVariants}
                       >
                         <div className="flex items-start gap-3">

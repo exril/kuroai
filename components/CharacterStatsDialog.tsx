@@ -58,12 +58,14 @@ const CharacterStatsDialog = ({ open, onOpenChange, name }: CharacterStatsDialog
     const agent = agents.find((agent) => agent.name == name)
 
     if ( agent ) {
-      setStats({
-        activity: agent.activity.split('>')[0],
-        mood:  agent.emotion,
-        energy: agent.basic_needs.energy * 10,
-        thoughts: agent.thoughts,
-        relationWithKuro: agent.social_relationships['Kuro']?.closeness / 2 | 0
+      setStats((prev) => {
+        return {
+          activity: agent.activity.split('>')[0],
+          mood:  agent.emotion,
+          energy: agent.basic_needs.energy * 10,
+          thoughts: agent.thoughts.includes(name) ? prev.thoughts : agent.thoughts,
+          relationWithKuro: agent.social_relationships['Kuro']?.closeness / 2 | 0
+        }
       })
     }
   }, [agents, name]);

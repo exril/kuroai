@@ -1,3 +1,7 @@
+export interface AgentActivity {
+  category: string,
+  intensity: number
+}
 export interface AgentAnalytics {
   basicNeeds: {
     timestamps: string[];
@@ -11,7 +15,7 @@ export interface AgentAnalytics {
   }[];
   activities: {
     timestamps: string[];
-    activities: string[];
+    activities: AgentActivity[];
   };
   emotions: {
     emotion: string;
@@ -48,13 +52,7 @@ export const mockAnalytics: Record<string, AgentAnalytics> = {
     ],
     activities: {
       timestamps: generateTimestamps(5),
-      activities: [
-        "Exploring",
-        "Playing",
-        "Training",
-        "Resting",
-        "Socializing",
-      ],
+      activities: [],
     },
     emotions: [
       { emotion: "Happy", percentage: 45 },
@@ -76,13 +74,7 @@ export const mockAnalytics: Record<string, AgentAnalytics> = {
     ],
     activities: {
       timestamps: generateTimestamps(5),
-      activities: [
-        "Inventing",
-        "Building",
-        "Researching",
-        "Testing",
-        "Analyzing",
-      ],
+      activities: [],
     },
     emotions: [
       { emotion: "Focused", percentage: 40 },
@@ -104,13 +96,7 @@ export const mockAnalytics: Record<string, AgentAnalytics> = {
     ],
     activities: {
       timestamps: generateTimestamps(5),
-      activities: [
-        "Adventuring",
-        "Exploring",
-        "Mapping",
-        "Discovering",
-        "Documenting",
-      ],
+      activities: [],
     },
     emotions: [
       { emotion: "Adventurous", percentage: 40 },
@@ -132,13 +118,7 @@ export const mockAnalytics: Record<string, AgentAnalytics> = {
     ],
     activities: {
       timestamps: generateTimestamps(5),
-      activities: [
-        "Studying",
-        "Researching",
-        "Teaching",
-        "Writing",
-        "Analyzing",
-      ],
+      activities: [],
     },
     emotions: [
       { emotion: "Wise", percentage: 35 },
@@ -160,13 +140,7 @@ export const mockAnalytics: Record<string, AgentAnalytics> = {
     ],
     activities: {
       timestamps: generateTimestamps(5),
-      activities: [
-        "Creating",
-        "Painting",
-        "Dancing",
-        "Singing",
-        "Performing",
-      ],
+      activities: [],
     },
     emotions: [
       { emotion: "Creative", percentage: 40 },
@@ -188,13 +162,7 @@ export const mockAnalytics: Record<string, AgentAnalytics> = {
     ],
     activities: {
       timestamps: generateTimestamps(5),
-      activities: [
-        "Gardening",
-        "Healing",
-        "Teaching",
-        "Nurturing",
-        "Meditating",
-      ],
+      activities: [],
     },
     emotions: [
       { emotion: "Caring", percentage: 35 },
@@ -216,13 +184,7 @@ export const mockAnalytics: Record<string, AgentAnalytics> = {
     ],
     activities: {
       timestamps: generateTimestamps(5),
-      activities: [
-        "Teaching",
-        "Researching",
-        "Mentoring",
-        "Studying",
-        "Meditating",
-      ],
+      activities: [],
     },
     emotions: [
       { emotion: "Wise", percentage: 40 },
